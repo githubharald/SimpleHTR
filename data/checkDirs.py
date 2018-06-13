@@ -7,13 +7,13 @@ checkFiles = ['words.txt', 'test.png', 'words/a01/a01-000u/a01-000u-00-00.png']
 
 for f in checkDirs:
 	if os.path.isdir(f):
-		print(f, 'ok')
+		print('[OK]', f)
 	else:
-		print(f, 'not found!!!')
+		print('[ERR]', f)
 
 
 for f in checkFiles:
 	if os.path.isfile(f):
-		print(f, 'ok')
+		print('[OK]', f)
 	else:
-		print(f, 'not found!!!')
+		print('[ERR]', f)

@@ -36,7 +36,7 @@ def train(filePath):
 			iterInfo = loader.getIteratorInfo()
 			batch = loader.getNext()
 			loss = model.trainBatch(batch)
-			print('Iterator:', iterInfo, 'Loss:', loss)
+			print('Batch:', iterInfo[0],'/', iterInfo[1], 'Loss:', loss)
 
 		# validate
 		print('Validate NN')
@@ -45,7 +45,7 @@ def train(filePath):
 		numTotal = 0
 		while loader.hasNext():
 			iterInfo = loader.getIteratorInfo()
-			print('Iterator:', iterInfo)
+			print('Batch:', iterInfo[0],'/', iterInfo[1])
 			batch = loader.getNext()
 			loss = model.trainBatch(batch)
 			recognized = model.inferBatch(batch)
