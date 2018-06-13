@@ -13,8 +13,8 @@ I will give some hints in how to improve the model in case you need larger input
 
 Go to the `model/` directory and unzip the file `model.zip` (pre-trained on the IAM dataset).
 Afterwards, go to the `src/` directory and run ```python main.py```.
-
 The input image and the expected output is shown below.
+Tested with TF 1.3 on Ubuntu 16.04.
 
 ![img](./data/test.png)
 
@@ -66,7 +66,7 @@ Ground truth -> Recognized
 [OK] "told" -> "told"
 [OK] "her" -> "her"
 ...
-Correctly recognized words: 60.0 %
+Correctly recognized words: 71.0 %
 ```
 
 ### Other dataset
@@ -95,7 +95,8 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 ### Improve accuracy
 
-Here are some ideas how to improve the accuracy:
+Around 70% of the words from IAM are correctly recognized by the NN.
+If you need a better accuracy, here are some ideas on how to improve it:
 
 * Data augmentation: increase dataset-size by applying random transformations to the input images
 * Remove cursive writing style in the input images (see [DeslantImg](https://github.com/githubharald/DeslantImg))
