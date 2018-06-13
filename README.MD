@@ -19,7 +19,7 @@ The input image and the expected output is shown below:
 
 ```
 Init with stored values from ../model/snapshot-1
-Recognized: "house"
+Recognized: "little"
 ```
 
 
@@ -82,6 +82,7 @@ The illustration below gives an overview of the operations and tensors of the NN
 * 5 CNN layers map the input image to a feature sequence of size 32x256.
 * 2 LSTM layers propagate information through the sequence and map the sequence to a matrix of size 32x80. Each matrix-element represents a score for one of the 80 characters at one of the 32 time-steps.
 * The CTC layer either calcualtes the loss value given the matrix and the ground-truth text, or it decodes the matrix to the final text with best path decoding.
+* Batch size is set to 50.
 
 ![img](./doc/nn_overview.png)
 
