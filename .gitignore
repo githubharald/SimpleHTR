@@ -1,0 +1,5 @@
+data/words/
+data/words.txt
+src/__pycache__/
+model/checkpoint
+model/snapshot-*
