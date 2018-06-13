@@ -10,9 +10,10 @@ class Model:
 	imgSize = (128, 32)
 	maxTextLen = 32
 
-	def __init__(self, charList):
+	def __init__(self, charList, mustRestore=False):
 		"init model: add CNN, RNN and CTC and initialize TF"
 		self.charList = charList
+		self.mustRestore = mustRestore
 		self.snapID = 0
 
 		# CNN
@@ -97,16 +98,20 @@ class Model:
 		sess=tf.Session() # TF session
 
 		saver = tf.train.Saver(max_to_keep=1) # saver saves model to file
-		latestSnapshot = tf.train.latest_checkpoint('../model/') # is there a saved model?
+		modelDir = '../model/'
+		latestSnapshot = tf.train.latest_checkpoint(modelDir) # is there a saved model?
 
-		# no saved model -> init with new values
-		if not latestSnapshot:
-			print('Init with new values')
-			sess.run(tf.global_variables_initializer())
-		# init with saved values
-		else:
+		# if model must be restored (for inference), there must be a snapshot
+		if self.mustRestore and not latestSnapshot:
+			raise Exception('No saved model found in: ' + modelDir)
+
+		# load saved model if available
+		if latestSnapshot:
 			print('Init with stored values from ' + latestSnapshot)
 			saver.restore(sess, latestSnapshot)
+		else:
+			print('Init with new values')
+			sess.run(tf.global_variables_initializer())
 
 		return (sess,saver)
 
