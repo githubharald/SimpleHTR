@@ -5,7 +5,7 @@ This Neural Network (NN) implementation is the bare minimum that is needed to de
 It is trained to recognize segmented words, therefore the model can be kept small and training on the CPU is feasible.
 If you want to get a higher recognition accuracy or if you want to input larger images (e.g. images of text-lines), I will give some hints how to enhance the model.
 
-![img](file://doc/htr.png)
+![img](./doc/htr.png)
 
 
 ## Run demo
@@ -15,7 +15,7 @@ Afterwards, go to the `src/` directory and run ```python main.py```.
 
 The input image and the expected output is shown below:
 
-![img](file://data/test.png)
+![img](./data/test.png)
 
 ```
 Init with stored values from ../model/snapshot-1
@@ -83,7 +83,7 @@ The illustration below gives an overview of the operations and tensors of the NN
 * 2 LSTM layers propagate information through the sequence and map the sequence to a matrix of size 32x80. Each matrix-element represents a score for one of the 80 characters at one of the 32 time-steps.
 * The CTC layer either calcualtes the loss value given the matrix and the ground-truth text, or it decodes the matrix to the final text with best path decoding.
 
-![img](file://doc/nn_overview.png)
+![img](./doc/nn_overview.png)
 
 
 # How to enhance the model
