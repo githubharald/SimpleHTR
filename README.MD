@@ -19,6 +19,7 @@ Tested with TF 1.3 on Ubuntu 16.04.
 ![img](./data/test.png)
 
 ```
+> python main.py
 Init with stored values from ../model/snapshot-1
 Recognized: "little"
 ```
@@ -46,6 +47,7 @@ After each epoch of training, validation is done on a validation set (the datase
 The expected output is shown below.
 
 ```
+> python main.py train
 Init with stored values from ../model/snapshot-1
 Epoch: 0
 Train NN
