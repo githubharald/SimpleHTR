@@ -23,10 +23,13 @@ def train(filePath):
 	open(fnCharList, 'w').write(str().join(loader.charList))
 
 	# train forever
-	epoch = 0
+	epoch = 0 # number of training epochs since start
+	bestAccuracy = 0.0 # best valdiation accuracy
+	noImprovementSince = 0 # number of epochs no improvement of accuracy occured
+	earlyStopping = 3 # stop training after this number of epochs without improvement
 	while True:
 		print('Epoch:', epoch)
-		model.save()
+		epoch += 1
 
 		# train
 		print('Train NN')
@@ -56,10 +59,25 @@ def train(filePath):
 				print('[OK]' if isOK else '[ERR]','"' + batch.gtTexts[i] + '"', '->', '"' + recognized[i] + '"')
 				numOK += 1 if isOK else 0
 				numTotal +=1
+		
 		# print validation result
-		print('Correctly recognized words:', numOK / numTotal * 100.0, '%')
+		accuracy = numOK / numTotal
+		print('Correctly recognized words:', accuracy * 100.0, '%')
+		
+		# if best validation accuracy so far, save model parameters (>= instead of > to avoid stopping while accuracy is at 0% for the first epochs)
+		if accuracy >= bestAccuracy:
+			print('Accuracy improved, save model')
+			bestAccuracy = accuracy
+			noImprovementSince = 0
+			model.save()
+		else:
+			print('Accuracy not improved')
+			noImprovementSince += 1
 
-		epoch += 1
+		# stop training if no more improvement in the last x epochs
+		if noImprovementSince >= earlyStopping:
+			print('No more improvement since %d epochs. Training stopped.' % earlyStopping)
+			break
 
 
 def infer(filePath):
