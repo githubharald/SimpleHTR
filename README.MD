@@ -1,10 +1,9 @@
 # Handwritten Text Recognition with TensorFlow
 
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
-This Neural Network (NN) model is the bare minimum that is needed to detect handwritten text with TF.
-It is trained to recognize segmented words as shown in the illustration below.
+This Neural Network (NN) model is trained to recognize segmented words as shown in the illustration below.
 As the images of segmented words are smaller than images of complete text-lines, the NN can be kept small and therefore training on the CPU is feasible.
-I will give some hints in how to improve the model in case you need larger input-images or want a better recognition accuracy.
+I will give some hints in how to extend the model in case you need larger input-images or want a better recognition accuracy.
 
 ![img](./doc/htr.png)
 
@@ -71,9 +70,9 @@ Ground truth -> Recognized
 Correctly recognized words: 71.0 %
 ```
 
-### Other dataset
+### Other datasets
 
-Either you convert your dataset into the IAM format (look at `words.txt` and the corresponding directory structure) or you change the class `DataLoader` according to your dataset format.
+Either you convert your dataset to the IAM format (look at `words.txt` and the corresponding directory structure) or you change the class `DataLoader` according to your dataset format.
 
 
 ## Information about model

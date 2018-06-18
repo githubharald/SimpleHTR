@@ -28,8 +28,8 @@ def train(filePath):
 	noImprovementSince = 0 # number of epochs no improvement of accuracy occured
 	earlyStopping = 3 # stop training after this number of epochs without improvement
 	while True:
-		print('Epoch:', epoch)
 		epoch += 1
+		print('Epoch:', epoch)
 
 		# train
 		print('Train NN')
@@ -64,8 +64,8 @@ def train(filePath):
 		accuracy = numOK / numTotal
 		print('Correctly recognized words:', accuracy * 100.0, '%')
 		
-		# if best validation accuracy so far, save model parameters (>= instead of > to avoid stopping while accuracy is at 0% for the first epochs)
-		if accuracy >= bestAccuracy:
+		# if best validation accuracy so far, save model parameters
+		if accuracy > bestAccuracy:
 			print('Accuracy improved, save model')
 			bestAccuracy = accuracy
 			noImprovementSince = 0

@@ -26,6 +26,7 @@ class DataLoader:
 
 		assert filePath[-1]=='/'
 
+		self.dataAugmentation = False
 		self.currIdx = 0
 		self.batchSize = batchSize
 		self.imgSize = imgSize
@@ -67,12 +68,14 @@ class DataLoader:
 
 	def trainSet(self):
 		"switch to training set"
+		self.dataAugmentation = True
 		self.currIdx = 0
 		self.samples = self.trainSamples
 
 	
 	def validationSet(self):
 		"switch to validation set"
+		self.dataAugmentation = False
 		self.currIdx = 0
 		self.samples = self.validationSamples
 
@@ -85,7 +88,7 @@ class DataLoader:
 
 	def getIteratorInfo(self):
 		"current batch index and overall number of batches"
-		return (self.currIdx//self.batchSize, len(self.samples)//self.batchSize)
+		return (self.currIdx // self.batchSize + 1, len(self.samples) // self.batchSize)
 
 
 	def hasNext(self):
@@ -97,7 +100,7 @@ class DataLoader:
 		"iterator"
 		batchRange = range(self.currIdx, self.currIdx + self.batchSize)
 		gtTexts = [self.samples[i].gtText for i in batchRange]
-		imgs = [preprocess(cv2.imread(self.samples[i].filePath, cv2.IMREAD_GRAYSCALE), self.imgSize) for i in batchRange]
+		imgs = [preprocess(cv2.imread(self.samples[i].filePath, cv2.IMREAD_GRAYSCALE), self.imgSize, self.dataAugmentation) for i in batchRange]
 		self.currIdx += self.batchSize
 		return Batch(gtTexts, imgs)
 

@@ -60,20 +60,20 @@ class Model:
 
 		# basic cells which is used to build RNN
 		numHidden = 256
-		cells=[tf.contrib.rnn.LSTMCell(num_units=numHidden, state_is_tuple=True) for _ in range(2)] # 2 layers
+		cells = [tf.contrib.rnn.LSTMCell(num_units=numHidden, state_is_tuple=True) for _ in range(2)] # 2 layers
 
 		# stack basic cells
-		stacked=tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
+		stacked = tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
 
 		# bidirectional RNN
 		# BxTxF -> BxTx2H
-		((fw,bw),_)=tf.nn.bidirectional_dynamic_rnn(cell_fw=stacked, cell_bw=stacked, inputs=rnnIn3d, dtype=rnnIn3d.dtype)
+		((fw, bw), _) = tf.nn.bidirectional_dynamic_rnn(cell_fw=stacked, cell_bw=stacked, inputs=rnnIn3d, dtype=rnnIn3d.dtype)
 									
 		# BxTxH + BxTxH -> BxTx2H -> BxTx1X2H
-		concat=tf.expand_dims(tf.concat([fw,bw],2), 2)
+		concat = tf.expand_dims(tf.concat([fw, bw], 2), 2)
 									
 		# project output to chars (including blank): BxTx1x2H -> BxTx1xC -> BxTxC
-		kernel=tf.Variable(tf.truncated_normal([1, 1, numHidden * 2, len(self.charList) + 1], stddev=0.1))
+		kernel = tf.Variable(tf.truncated_normal([1, 1, numHidden * 2, len(self.charList) + 1], stddev=0.1))
 		return tf.squeeze(tf.nn.atrous_conv2d(value=concat, filters=kernel, rate=1, padding='SAME'), axis=[2])
 		
 
@@ -82,7 +82,7 @@ class Model:
 		# BxTxC -> TxBxC
 		ctcIn3dTBC = tf.transpose(ctcIn3d, [1, 0, 2])
 		# ground truth text as sparse tensor
-		self.gtTexts = tf.SparseTensor(tf.placeholder(tf.int64, shape=[None,2]) , tf.placeholder(tf.int32,[None]), tf.placeholder(tf.int64,[2]))
+		self.gtTexts = tf.SparseTensor(tf.placeholder(tf.int64, shape=[None, 2]) , tf.placeholder(tf.int32, [None]), tf.placeholder(tf.int64, [2]))
 		# calc loss for batch
 		self.seqLen = tf.placeholder(tf.int32, [None])
 		loss = tf.nn.ctc_loss(labels=self.gtTexts, inputs=ctcIn3dTBC, sequence_length=self.seqLen, ctc_merge_repeated=True)
@@ -118,14 +118,14 @@ class Model:
 
 	def toSparse(self, texts):
 		"put ground truth texts into sparse tensor for ctc_loss"
-		indices=[]
-		values=[]
-		shape=[len(texts), 0] # last entry must be max(labelList[i])
+		indices = []
+		values = []
+		shape = [len(texts), 0] # last entry must be max(labelList[i])
 
 		# go over all texts
 		for (batchElement, text) in enumerate(texts):
 			# convert to string of label (i.e. class-ids)
-			labelStr=[self.charList.index(c) for c in text]
+			labelStr = [self.charList.index(c) for c in text]
 			# sparse tensor must have size of max. label-string
 			if len(labelStr) > shape[1]:
 				shape[1] = len(labelStr)
@@ -171,4 +171,4 @@ class Model:
 		"save model to file"
 		self.snapID += 1
 		self.saver.save(self.sess, '../model/snapshot', global_step=self.snapID)
-
+ 
