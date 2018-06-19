@@ -53,12 +53,14 @@ class DataLoader:
 			# put sample into list
 			self.samples.append(Sample(gtText, fileName))
 
-
 		# split into training and validation set: 95% - 5%
 		splitIdx = int(0.95 * len(self.samples))
 		self.trainSamples = self.samples[:splitIdx]
 		self.validationSamples = self.samples[splitIdx:]
 
+		# number of randomly chosen samples per epoch for training 
+		self.numTrainSamplesPerEpoch = 25000 
+		
 		# start with train set
 		self.trainSet()
 
@@ -67,10 +69,11 @@ class DataLoader:
 
 
 	def trainSet(self):
-		"switch to training set"
+		"switch to randomly chosen subset of training set"
 		self.dataAugmentation = True
 		self.currIdx = 0
-		self.samples = self.trainSamples
+		random.shuffle(self.trainSamples)
+		self.samples = self.trainSamples[:self.numTrainSamplesPerEpoch]
 
 	
 	def validationSet(self):
@@ -78,12 +81,6 @@ class DataLoader:
 		self.dataAugmentation = False
 		self.currIdx = 0
 		self.samples = self.validationSamples
-
-
-	def shuffle(self):
-		"shuffle current set"
-		self.currIdx = 0
-		random.shuffle(self.samples)
 
 
 	def getIteratorInfo(self):

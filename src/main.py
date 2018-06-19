@@ -7,6 +7,7 @@ from SamplePreprocessor import preprocess
 
 # filenames and paths to data
 fnCharList = '../model/charList.txt'
+fnAccuracy = '../model/accuracy.txt'
 fnTrain = '../data/'
 fnInfer = '../data/test.png'
 
@@ -34,7 +35,6 @@ def train(filePath):
 		# train
 		print('Train NN')
 		loader.trainSet()
-		loader.shuffle()
 		while loader.hasNext():
 			iterInfo = loader.getIteratorInfo()
 			batch = loader.getNext()
@@ -70,6 +70,7 @@ def train(filePath):
 			bestAccuracy = accuracy
 			noImprovementSince = 0
 			model.save()
+			open(fnAccuracy, 'w').write('Validation accuracy of saved model: '+str(accuracy))
 		else:
 			print('Accuracy not improved')
 			noImprovementSince += 1

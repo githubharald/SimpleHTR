@@ -1,9 +1,9 @@
 # Handwritten Text Recognition with TensorFlow
 
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
-This Neural Network (NN) model is trained to recognize segmented words as shown in the illustration below.
-As the images of segmented words are smaller than images of complete text-lines, the NN can be kept small and therefore training on the CPU is feasible.
-I will give some hints in how to extend the model in case you need larger input-images or want a better recognition accuracy.
+This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
+As these word-images are smaller than images of complete text-lines, the NN can be kept small and training on the CPU is feasible.
+I will give some hints how to extend the model in case you need larger input-images or want better recognition accuracy.
 
 ![img](./doc/htr.png)
 
@@ -47,17 +47,20 @@ The expected output is shown below.
 
 ```
 > python main.py train
-Init with stored values from ../model/snapshot-1
-Epoch: 0
+Init with new values
+Epoch: 1
 Train NN
-Batch: 0 / 2191 Loss: 3.87954
-Batch: 1 / 2191 Loss: 5.31012
-Batch: 2 / 2191 Loss: 3.87662
-Batch: 3 / 2191 Loss: 4.03646
+Batch: 1 / 500 Loss: 113.333
+Batch: 2 / 500 Loss: 40.0665
+Batch: 3 / 500 Loss: 24.2433
+Batch: 4 / 500 Loss: 21.644
+Batch: 5 / 500 Loss: 22.2018
+Batch: 6 / 500 Loss: 18.6628
+Batch: 7 / 500 Loss: 20.9978
 ...
 
 Validate NN
-Batch: 0 / 115
+Batch: 1 / 115
 Ground truth -> Recognized
 [OK] "," -> ","
 [ERR] "Di" -> "D"
@@ -67,7 +70,7 @@ Ground truth -> Recognized
 [OK] "told" -> "told"
 [OK] "her" -> "her"
 ...
-Correctly recognized words: 71.0 %
+Correctly recognized words: 67.0608695652174 %
 ```
 
 ### Other datasets
@@ -79,11 +82,11 @@ Either you convert your dataset to the IAM format (look at `words.txt` and the c
 
 ### Overview
 
-The model is a stripped-down version of the HTR system I used for my thesis.
+The model is a stripped-down version of the HTR system I implemented for my thesis.
 What remains is what I think is the bare minimum to recognize text with an acceptable accuracy.
 The implementation only depends on numpy, cv2 and tensorflow imports.
 It consists of 5 CNN layers, 2 RNN (LSTM) layers and the CTC loss and decoding layer.
-The illustration below gives an overview of the NN (green: operations, pink: data) and here follows a short description:
+The illustration below gives an overview of the NN (green: operations, pink: data flowing through NN) and here follows a short description:
 
 * The input image is a gray-value image and has a size of 128x32
 * 5 CNN layers map the input image to a feature sequence of size 32x256
@@ -99,11 +102,11 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 Around 70% of the words from IAM are correctly recognized by the NN.
 If you need a better accuracy, here are some ideas on how to improve it:
 
-* Data augmentation: increase dataset-size by applying random transformations to the input images
+* Data augmentation: increase dataset-size by applying random transformations to the input images. At the moment, only random distortions are performed
 * Remove cursive writing style in the input images (see [DeslantImg](https://github.com/githubharald/DeslantImg))
 * Increase input size (if input of NN is large enough, complete text-lines can be used)
 * Add more CNN layers
-* Replace LSTM by MD-LSTM
+* Replace LSTM by multidimensional LSTM
 * Decoder: either use vanilla beam search decoding (included with TF) or use word beam search decoding (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words
 * Text correction: if the recognized word is not contained in a dictionary, search for the most similar one
 
