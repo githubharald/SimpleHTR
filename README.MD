@@ -3,6 +3,7 @@
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
 This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
 As these word-images are smaller than images of complete text-lines, the NN can be kept small and training on the CPU is feasible.
+More than 86% of the samples from the validation-set are correctly recognized.
 I will give some hints how to extend the model in case you need larger input-images or want better recognition accuracy.
 
 ![img](./doc/htr.png)
@@ -19,7 +20,7 @@ Tested with TF 1.3 on Ubuntu 16.04.
 
 ```
 > python main.py
-Init with stored values from ../model/snapshot-1
+Init with stored values from ../model/snapshot-13
 Recognized: "little"
 ```
 
@@ -43,6 +44,7 @@ If you want to train the model from scratch, delete the files contained in the `
 Otherwise, the parameters are loaded from the last model-snapshot before training begins.
 Then, go to the `src/` directory and execute `python main.py train`.
 After each epoch of training, validation is done on a validation set (the dataset is split into 95% of the samples used for training and 5% for validation as defined in the class `DataLoader`).
+Training on the CPU takes 6 hours on my system (VM, Ubuntu 16.04, 8GB of RAM and 4 cores running at 3.9GHz).
 The expected output is shown below.
 
 ```
@@ -70,7 +72,7 @@ Ground truth -> Recognized
 [OK] "told" -> "told"
 [OK] "her" -> "her"
 ...
-Correctly recognized words: 67.0608695652174 %
+Correctly recognized words: 86.34782608695653 %
 ```
 
 ### Other datasets
@@ -90,7 +92,7 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 * The input image is a gray-value image and has a size of 128x32
 * 5 CNN layers map the input image to a feature sequence of size 32x256
-* 2 LSTM layers with 256 hidden units propagate information through the sequence and map the sequence to a matrix of size 32x80. Each matrix-element represents a score for one of the 80 characters at one of the 32 time-steps
+* 2 LSTM layers with 256 units propagate information through the sequence and map the sequence to a matrix of size 32x80. Each matrix-element represents a score for one of the 80 characters at one of the 32 time-steps
 * The CTC layer either calculates the loss value given the matrix and the ground-truth text (when training), or it decodes the matrix to the final text with best path decoding (when inferring)
 * Batch size is set to 50
 
@@ -99,7 +101,7 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 ### Improve accuracy
 
-Around 70% of the words from IAM are correctly recognized by the NN.
+Around 86% of the words from IAM are correctly recognized by the NN.
 If you need a better accuracy, here are some ideas on how to improve it:
 
 * Data augmentation: increase dataset-size by applying random transformations to the input images. At the moment, only random distortions are performed
@@ -109,7 +111,5 @@ If you need a better accuracy, here are some ideas on how to improve it:
 * Replace LSTM by multidimensional LSTM
 * Decoder: either use vanilla beam search decoding (included with TF) or use word beam search decoding (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words
 * Text correction: if the recognized word is not contained in a dictionary, search for the most similar one
-
-
 
 
