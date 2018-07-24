@@ -1,4 +1,5 @@
 import sys
+import argparse
 import cv2
 from DataLoader import DataLoader, Batch
 from Model import Model
@@ -10,6 +11,7 @@ fnCharList = '../model/charList.txt'
 fnAccuracy = '../model/accuracy.txt'
 fnTrain = '../data/'
 fnInfer = '../data/test.png'
+useBeamSearch = False
 
 
 def train(filePath):
@@ -18,7 +20,7 @@ def train(filePath):
 	loader = DataLoader(filePath, Model.batchSize, Model.imgSize, Model.maxTextLen)
 
 	# create TF model
-	model = Model(loader.charList)
+	model = Model(loader.charList, useBeamSearch)
 
 	# save characters of model for inference mode
 	open(fnCharList, 'w').write(str().join(loader.charList))
@@ -81,9 +83,43 @@ def train(filePath):
 			break
 
 
+def validate(filePath):
+	"validate NN"
+	# load training data
+	loader = DataLoader(filePath, Model.batchSize, Model.imgSize, Model.maxTextLen)
+
+	# create TF model
+	model = Model(loader.charList, useBeamSearch)
+
+	# save characters of model for inference mode
+	open(fnCharList, 'w').write(str().join(loader.charList))
+
+	print('Validate NN')
+	loader.validationSet()
+	numOK = 0
+	numTotal = 0
+	while loader.hasNext():
+		iterInfo = loader.getIteratorInfo()
+		print('Batch:', iterInfo[0],'/', iterInfo[1])
+		batch = loader.getNext()
+		loss = model.trainBatch(batch)
+		recognized = model.inferBatch(batch)
+		
+		print('Ground truth -> Recognized')	
+		for i in range(len(recognized)):
+			isOK = batch.gtTexts[i] == recognized[i]
+			print('[OK]' if isOK else '[ERR]','"' + batch.gtTexts[i] + '"', '->', '"' + recognized[i] + '"')
+			numOK += 1 if isOK else 0
+			numTotal +=1
+	
+	# print validation result
+	accuracy = numOK / numTotal
+	print('Correctly recognized words:', accuracy * 100.0, '%')
+
+
 def infer(filePath):
 	"recognize text in image provided by file path"
-	model = Model(open(fnCharList).read(), mustRestore=True)
+	model = Model(open(fnCharList).read(), useBeamSearch, mustRestore=True)
 	img = preprocess(cv2.imread(fnInfer, cv2.IMREAD_GRAYSCALE), Model.imgSize)
 	batch = Batch(None, [img] * Model.batchSize)
 	recognized = model.inferBatch(batch)
@@ -91,7 +127,22 @@ def infer(filePath):
 
 
 if __name__ == '__main__':
-	if len(sys.argv) == 2 and sys.argv[1] == 'train':
+	# optional command line args
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--train", help="train the NN", action="store_true")
+	parser.add_argument("--validate", help="validate the NN", action="store_true")
+	parser.add_argument("--beamsearch", help="use beam search instead of best path decoding", action="store_true")
+	args = parser.parse_args()
+
+	# use beam search (better accuracy, but slower) instead of best path decoding
+	if args.beamsearch:
+		useBeamSearch = True
+	
+	# train or validate NN, or infer text on the text image
+	if args.train:
 		train(fnTrain)
+	elif args.validate:
+		validate(fnTrain)
 	else:
 		infer(fnInfer)
+

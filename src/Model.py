@@ -10,9 +10,10 @@ class Model:
 	imgSize = (128, 32)
 	maxTextLen = 32
 
-	def __init__(self, charList, mustRestore=False):
+	def __init__(self, charList, useBeamSearch=False, mustRestore=False):
 		"init model: add CNN, RNN and CTC and initialize TF"
 		self.charList = charList
+		self.useBeamSearch = useBeamSearch
 		self.mustRestore = mustRestore
 		self.snapID = 0
 
@@ -86,7 +87,11 @@ class Model:
 		# calc loss for batch
 		self.seqLen = tf.placeholder(tf.int32, [None])
 		loss = tf.nn.ctc_loss(labels=self.gtTexts, inputs=ctcIn3dTBC, sequence_length=self.seqLen, ctc_merge_repeated=True)
-		decoder = tf.nn.ctc_greedy_decoder(inputs=ctcIn3dTBC, sequence_length=self.seqLen)
+		# decoder: either best path decoding or beam search decoding
+		if self.useBeamSearch:
+			decoder = tf.nn.ctc_beam_search_decoder(inputs=ctcIn3dTBC, sequence_length=self.seqLen, beam_width=25, merge_repeated=False)
+		else:
+			decoder = tf.nn.ctc_greedy_decoder(inputs=ctcIn3dTBC, sequence_length=self.seqLen)
 		return (tf.reduce_mean(loss), decoder)
 
 
