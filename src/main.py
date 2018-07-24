@@ -52,7 +52,6 @@ def train(filePath):
 			iterInfo = loader.getIteratorInfo()
 			print('Batch:', iterInfo[0],'/', iterInfo[1])
 			batch = loader.getNext()
-			loss = model.trainBatch(batch)
 			recognized = model.inferBatch(batch)
 			
 			print('Ground truth -> Recognized')	
@@ -102,7 +101,6 @@ def validate(filePath):
 		iterInfo = loader.getIteratorInfo()
 		print('Batch:', iterInfo[0],'/', iterInfo[1])
 		batch = loader.getNext()
-		loss = model.trainBatch(batch)
 		recognized = model.inferBatch(batch)
 		
 		print('Ground truth -> Recognized')	

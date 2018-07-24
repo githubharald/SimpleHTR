@@ -3,7 +3,7 @@
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
 This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
 As these word-images are smaller than images of complete text-lines, the NN can be kept small and training on the CPU is feasible.
-More than 86% of the samples from the validation-set are correctly recognized.
+More than 70% of the samples from the validation-set are correctly recognized.
 I will give some hints how to extend the model in case you need larger input-images or want better recognition accuracy.
 
 ![img](./doc/htr.png)
@@ -83,7 +83,7 @@ Ground truth -> Recognized
 [OK] "told" -> "told"
 [OK] "her" -> "her"
 ...
-Correctly recognized words: 86.34782608695653 %
+Correctly recognized words: 71.70434782608696 %
 ```
 
 ### Other datasets
@@ -112,7 +112,7 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 ### Improve accuracy
 
-Around 86% of the words from IAM are correctly recognized by the NN.
+Around 71% of the words from IAM are correctly recognized by the NN.
 If you need a better accuracy, here are some ideas on how to improve it:
 
 * Data augmentation: increase dataset-size by applying random transformations to the input images. At the moment, only random distortions are performed
