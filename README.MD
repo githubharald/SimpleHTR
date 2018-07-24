@@ -25,6 +25,16 @@ Recognized: "little"
 ```
 
 
+## Command line arguments
+
+* --train: trains the NN, details see below.
+* --validate: validates the NN, details see below.
+* --beamsearch: use beam search decoding (better, but slower) instead of best path decoding.
+
+If neither --train nor --validate is specified, the NN infers the text from the test image.
+Two examples: if you want to infer using beam search, execute `python --beamsearch`, while you have to execute `python --train --beamsearch` if you want to train the NN and do the validation using beam search.
+
+
 ## Train model 
 
 ### IAM dataset
@@ -42,13 +52,14 @@ Follow these instructions to get the dataset:
 
 If you want to train the model from scratch, delete the files contained in the `model/` directory.
 Otherwise, the parameters are loaded from the last model-snapshot before training begins.
-Then, go to the `src/` directory and execute `python main.py train`.
+Then, go to the `src/` directory and execute `python main.py --train`.
 After each epoch of training, validation is done on a validation set (the dataset is split into 95% of the samples used for training and 5% for validation as defined in the class `DataLoader`).
+If you only want to do the validation given a trained NN, execute `python main.py --validate`.
 Training on the CPU takes 6 hours on my system (VM, Ubuntu 16.04, 8GB of RAM and 4 cores running at 3.9GHz).
 The expected output is shown below.
 
 ```
-> python main.py train
+> python main.py --train
 Init with new values
 Epoch: 1
 Train NN
@@ -112,4 +123,10 @@ If you need a better accuracy, here are some ideas on how to improve it:
 * Decoder: either use vanilla beam search decoding (included with TF) or use word beam search decoding (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words
 * Text correction: if the recognized word is not contained in a dictionary, search for the most similar one
 
+
+## FAQ
+
+* I get the error message "Exception: No saved model found in: ... ": unzip the file `model/model.zip`. All files contained must be placed directly into the `model/` directory and **not** in some subdirectory created by the unzip-program.
+* I want to recognize text for complete lines/sentences: you have to increase the size of NN, especially the width of the input image (e.g. 800px) and the number of time-steps (e.g. 100) of the output matrix.
+* I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score.
 
