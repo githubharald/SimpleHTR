@@ -130,4 +130,4 @@ If you need a better accuracy, here are some ideas how to improve it:
 * I want to recognize text for complete lines/sentences: you have to increase the size of NN, especially the width of the input image (e.g. 800px) and the number of time-steps (e.g. 100) of the output matrix.
 * I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score.
 * I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset.
-
+* When I train the NN myself, the accuracy is worse than the accuracy of the pre-trained NN: the pre-trained model is trained with slightly different settings. This will be fixed as soon as possible such that the results will match.
