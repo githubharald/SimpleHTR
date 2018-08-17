@@ -28,7 +28,9 @@ class Model:
 		(self.loss, self.decoder) = self.setupCTC(rnnOut3d)
 
 		# optimizer for NN parameters
-		self.optimizer = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
+		self.batchesTrained = 0
+		self.learningRate = tf.placeholder(tf.float32, shape=[])
+		self.optimizer = tf.train.RMSPropOptimizer(self.learningRate).minimize(self.loss)
 
 		# initialize TF
 		(self.sess, self.saver) = self.setupTF()
@@ -162,7 +164,9 @@ class Model:
 	def trainBatch(self, batch):
 		"feed a batch into the NN to train it"
 		sparse = self.toSparse(batch.gtTexts)
-		(_, lossVal) = self.sess.run([self.optimizer, self.loss], { self.inputImgs : batch.imgs, self.gtTexts : sparse , self.seqLen : [Model.maxTextLen] * Model.batchSize } )
+		rate = 0.01 if self.batchesTrained < 10 else (0.001 if self.batchesTrained < 10000 else 0.0001) # decay learning rate
+		(_, lossVal) = self.sess.run([self.optimizer, self.loss], { self.inputImgs : batch.imgs, self.gtTexts : sparse , self.seqLen : [Model.maxTextLen] * Model.batchSize, self.learningRate : rate} )
+		self.batchesTrained += 1
 		return lossVal
 
 
