@@ -3,8 +3,8 @@
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
 This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
 As these word-images are smaller than images of complete text-lines, the NN can be kept small and training on the CPU is feasible.
-More than 71% of the samples from the validation-set are correctly recognized.
-I will give some hints how to extend the model in case you need larger input-images or want better recognition accuracy.
+2/3 of the words from the validation-set are correctly recognized and the character error rate is around 13%.
+I will give some hints how to extend the model in case you need larger input-images (e.g. to recognize text-lines) or want better recognition accuracy.
 
 ![img](./doc/htr.png)
 
@@ -20,7 +20,8 @@ Tested with TF 1.3 on Ubuntu 16.04.
 
 ```
 > python main.py
-Init with stored values from ../model/snapshot-13
+Validation character error rate of saved model: 13.956289%
+Init with stored values from ../model/snapshot-32
 Recognized: "little"
 ```
 
@@ -43,8 +44,8 @@ The data-loader expects the IAM dataset (or any other dataset that is compatible
 Follow these instructions to get the dataset:
 
 1. Register for free at this [website](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database).
-2. Download `words.tgz`.
-3. Download `words.txt`.
+2. Download `words/words.tgz`.
+3. Download `ascii/words.txt`.
 4. Put `words.txt` into the `data/` directory.
 5. Create the directory `data/words/`.
 6. Put the content (directories `a01`, `a02`, ...) of `words.tgz` into `data/words/`.
@@ -55,7 +56,7 @@ Otherwise, the parameters are loaded from the last model-snapshot before trainin
 Then, go to the `src/` directory and execute `python main.py --train`.
 After each epoch of training, validation is done on a validation set (the dataset is split into 95% of the samples used for training and 5% for validation as defined in the class `DataLoader`).
 If you only want to do validation given a trained NN, execute `python main.py --validate`.
-Training on the CPU takes 6 hours on my system (VM, Ubuntu 16.04, 8GB of RAM and 4 cores running at 3.9GHz).
+Training on the CPU takes 18 hours on my system (VM, Ubuntu 16.04, 8GB of RAM and 4 cores running at 3.9GHz).
 The expected output is shown below.
 
 ```
@@ -63,32 +64,32 @@ The expected output is shown below.
 Init with new values
 Epoch: 1
 Train NN
-Batch: 1 / 500 Loss: 113.333
-Batch: 2 / 500 Loss: 40.0665
-Batch: 3 / 500 Loss: 24.2433
-Batch: 4 / 500 Loss: 21.644
-Batch: 5 / 500 Loss: 22.2018
-Batch: 6 / 500 Loss: 18.6628
-Batch: 7 / 500 Loss: 20.9978
+Batch: 1 / 500 Loss: 130.354
+Batch: 2 / 500 Loss: 66.6619
+Batch: 3 / 500 Loss: 36.0154
+Batch: 4 / 500 Loss: 24.5898
+Batch: 5 / 500 Loss: 20.1845
+Batch: 6 / 500 Loss: 19.2857
+Batch: 7 / 500 Loss: 18.3493
 ...
 
 Validate NN
 Batch: 1 / 115
 Ground truth -> Recognized
 [OK] "," -> ","
-[ERR] "Di" -> "D"
+[ERR:1] "Di" -> "D"
 [OK] "," -> ","
 [OK] """ -> """
 [OK] "he" -> "he"
 [OK] "told" -> "told"
-[OK] "her" -> "her"
+[ERR:2] "her" -> "nor"
 ...
-Correctly recognized words: 71.70434782608696 %
+Character error rate: 13.710972%. Word accuracy: 68.191304%.
 ```
 
 ### Other datasets
 
-Either you convert your dataset to the IAM format (look at `words.txt` and the corresponding directory structure) or you change the class `DataLoader` according to your dataset format.
+Either convert your dataset to the IAM format (look at `words.txt` and the corresponding directory structure) or change the class `DataLoader` according to your dataset format.
 
 
 ## Information about model
@@ -112,15 +113,15 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 ### Improve accuracy
 
-Around 71% of the words from IAM are correctly recognized by the NN.
+Around 68% of the words from IAM are correctly recognized by the NN.
 If you need a better accuracy, here are some ideas how to improve it:
 
-* Data augmentation: increase dataset-size by applying random transformations to the input images. At the moment, only random distortions are performed.
+* Data augmentation: increase dataset-size by applying further (random) transformations to the input images. At the moment, only random distortions are performed.
 * Remove cursive writing style in the input images (see [DeslantImg](https://github.com/githubharald/DeslantImg)).
 * Increase input size (if input of NN is large enough, complete text-lines can be used).
 * Add more CNN layers.
-* Replace LSTM by multidimensional LSTM.
-* Decoder: use word beam search decoding (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words.
+* Replace LSTM by 2D-LSTM.
+* Decoder: use token passing or word beam search decoding (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words.
 * Text correction: if the recognized word is not contained in a dictionary, search for the most similar one.
 
 
@@ -130,4 +131,5 @@ If you need a better accuracy, here are some ideas how to improve it:
 * I want to recognize text for complete lines/sentences: you have to increase the size of NN, especially the width of the input image (e.g. 800px) and the number of time-steps (e.g. 100) of the output matrix.
 * I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score.
 * I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset.
-* When I train the NN myself, the accuracy is worse than the accuracy of the pre-trained NN: the pre-trained model is trained with slightly different settings. This will be fixed as soon as possible such that the results will match.
+* Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
+
