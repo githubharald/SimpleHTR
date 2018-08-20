@@ -84,7 +84,7 @@ Ground truth -> Recognized
 [OK] "told" -> "told"
 [ERR:2] "her" -> "nor"
 ...
-Character error rate: 13.710972%. Word accuracy: 68.191304%.
+Character error rate: 13.956289%. Word accuracy: 67.721739%.
 ```
 
 ### Other datasets
@@ -113,7 +113,7 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 ### Improve accuracy
 
-Around 68% of the words from IAM are correctly recognized by the NN.
+Around 68% of the words from the IAM dataset are correctly recognized by the NN when using beam search decoding.
 If you need a better accuracy, here are some ideas how to improve it:
 
 * Data augmentation: increase dataset-size by applying further (random) transformations to the input images. At the moment, only random distortions are performed.
