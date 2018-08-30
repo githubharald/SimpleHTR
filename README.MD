@@ -30,7 +30,7 @@ Recognized: "little"
 
 * `--train`: train the NN, details see below.
 * `--validate`: validate the NN, details see below.
-* `--beamsearch`: use (vanilla) beam search decoding (better, but slower) instead of best path decoding.
+* `--beamsearch`: use vanilla beam search decoding (better, but slower) instead of best path decoding.
 * `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN.
 
 If neither `--train` nor `--validate` is specified, the NN infers the text from the test image (`data/test.png`).
@@ -50,7 +50,7 @@ Follow these instructions to integrate word beam search decoding:
 
 Word beam search can now be enabled by setting the corresponding command line argument.
 The dictionary is created (in training and validation mode) by using all words contained in the IAM dataset (i.e. also including words from validation set) and is saved into the file `data/corpus.txt`.
-Further, the list of word-characters can be found in the file `wordCharList.txt`.
+Further, the (manually created) list of word-characters can be found in the file `model/wordCharList.txt`.
 Beam width is set to 50 to conform with the beam width of vanilla beam search decoding.
 
 Using this configuration, a character error rate of 10% and a word accuracy of 81% is achieved.
@@ -132,7 +132,7 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 ### Improve accuracy
 
-Around 68% of the words from the IAM dataset are correctly recognized by the NN when using beam search decoding.
+Around 68% of the words from the IAM dataset are correctly recognized by the NN when using vanilla beam search decoding.
 If you need a better accuracy, here are some ideas how to improve it:
 
 * Data augmentation: increase dataset-size by applying further (random) transformations to the input images. At the moment, only random distortions are performed.
@@ -151,4 +151,5 @@ If you need a better accuracy, here are some ideas how to improve it:
 * I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score.
 * I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset.
 * Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
+* I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the TF operation from source.
 
