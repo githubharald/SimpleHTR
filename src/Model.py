@@ -2,6 +2,12 @@ import sys
 import tensorflow as tf
 
 
+class DecoderType:
+	BestPath = 0
+	BeamSearch = 1
+	WordBeamSearch = 2
+
+
 class Model: 
 	"minimalistic TF model for HTR"
 
@@ -10,10 +16,10 @@ class Model:
 	imgSize = (128, 32)
 	maxTextLen = 32
 
-	def __init__(self, charList, useBeamSearch=False, mustRestore=False):
+	def __init__(self, charList, decoderType=DecoderType.BestPath, mustRestore=False):
 		"init model: add CNN, RNN and CTC and initialize TF"
 		self.charList = charList
-		self.useBeamSearch = useBeamSearch
+		self.decoderType = decoderType
 		self.mustRestore = mustRestore
 		self.snapID = 0
 
@@ -90,10 +96,23 @@ class Model:
 		self.seqLen = tf.placeholder(tf.int32, [None])
 		loss = tf.nn.ctc_loss(labels=self.gtTexts, inputs=ctcIn3dTBC, sequence_length=self.seqLen, ctc_merge_repeated=True)
 		# decoder: either best path decoding or beam search decoding
-		if self.useBeamSearch:
-			decoder = tf.nn.ctc_beam_search_decoder(inputs=ctcIn3dTBC, sequence_length=self.seqLen, beam_width=50, merge_repeated=False)
-		else:
+		if self.decoderType == DecoderType.BestPath:
 			decoder = tf.nn.ctc_greedy_decoder(inputs=ctcIn3dTBC, sequence_length=self.seqLen)
+		elif self.decoderType == DecoderType.BeamSearch:
+			decoder = tf.nn.ctc_beam_search_decoder(inputs=ctcIn3dTBC, sequence_length=self.seqLen, beam_width=50, merge_repeated=False)
+		elif self.decoderType == DecoderType.WordBeamSearch:
+			# import compiled word beam search operation (see https://github.com/githubharald/CTCWordBeamSearch)
+			word_beam_search_module = tf.load_op_library('TFWordBeamSearch.so')
+
+			# prepare information about language (dictionary, characters in dataset, characters forming words) 
+			chars = str().join(self.charList)
+			wordChars = open('../model/wordCharList.txt').read().splitlines()[0]
+			corpus = open('../data/corpus.txt').read()
+
+			# decode using the "Words" mode of word beam search
+			decoder = word_beam_search_module.word_beam_search(tf.nn.softmax(ctcIn3dTBC, dim=2), 50, 'Words', 0.0, corpus.encode('utf8'), chars.encode('utf8'), wordChars.encode('utf8'))
+
+		# return a CTC operation to compute the loss and a CTC operation to decode the RNN output
 		return (tf.reduce_mean(loss), decoder)
 
 
@@ -144,18 +163,32 @@ class Model:
 		return (indices, values, shape)
 
 
-	def fromSparse(self, ctcOutput):
-		"extract texts from sparse tensor"
-		# ctc returns tuple, first element is SparseTensor 
-		decoded=ctcOutput[0][0] 
-
-		# go over all indices and save mapping: batch -> values
-		idxDict = { b : [] for b in range(Model.batchSize) }
+	def decoderOutputToText(self, ctcOutput):
+		"extract texts from output of CTC decoder"
+		
+		# contains string of labels for each batch element
 		encodedLabelStrs = [[] for i in range(Model.batchSize)]
-		for (idx, idx2d) in enumerate(decoded.indices):
-			label = decoded.values[idx]
-			batchElement = idx2d[0] # index according to [b,t]
-			encodedLabelStrs[batchElement].append(label)
+
+		# word beam search: label strings terminated by blank
+		if self.decoderType == DecoderType.WordBeamSearch:
+			blank=len(self.charList)
+			for b in range(Model.batchSize):
+				for label in ctcOutput[b]:
+					if label==blank:
+						break
+					encodedLabelStrs[b].append(label)
+
+		# TF decoders: label strings are contained in sparse tensor
+		else:
+			# ctc returns tuple, first element is SparseTensor 
+			decoded=ctcOutput[0][0] 
+
+			# go over all indices and save mapping: batch -> values
+			idxDict = { b : [] for b in range(Model.batchSize) }
+			for (idx, idx2d) in enumerate(decoded.indices):
+				label = decoded.values[idx]
+				batchElement = idx2d[0] # index according to [b,t]
+				encodedLabelStrs[batchElement].append(label)
 
 		# map labels to chars for all batch elements
 		return [str().join([self.charList[c] for c in labelStr]) for labelStr in encodedLabelStrs]
@@ -173,7 +206,7 @@ class Model:
 	def inferBatch(self, batch):
 		"feed a batch into the NN to recngnize the texts"
 		decoded = self.sess.run(self.decoder, { self.inputImgs : batch.imgs, self.seqLen : [Model.maxTextLen] * Model.batchSize } )
-		return self.fromSparse(decoded)
+		return self.decoderOutputToText(decoded)
 	
 
 	def save(self):

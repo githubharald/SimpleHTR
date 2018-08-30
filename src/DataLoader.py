@@ -58,6 +58,10 @@ class DataLoader:
 		self.trainSamples = self.samples[:splitIdx]
 		self.validationSamples = self.samples[splitIdx:]
 
+		# put words into lists
+		self.trainWords = [x.gtText for x in self.trainSamples]
+		self.validationWords = [x.gtText for x in self.validationSamples]
+
 		# number of randomly chosen samples per epoch for training 
 		self.numTrainSamplesPerEpoch = 25000 
 		

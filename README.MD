@@ -30,11 +30,30 @@ Recognized: "little"
 
 * `--train`: train the NN, details see below.
 * `--validate`: validate the NN, details see below.
-* `--beamsearch`: use beam search decoding (better, but slower) instead of best path decoding.
+* `--beamsearch`: use (vanilla) beam search decoding (better, but slower) instead of best path decoding.
+* `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN.
 
 If neither `--train` nor `--validate` is specified, the NN infers the text from the test image (`data/test.png`).
 Two examples: if you want to infer using beam search, execute `python main.py --beamsearch`, while you have to execute `python main.py --train --beamsearch` if you want to train the NN and do the validation using beam search.
 
+
+## Integrate word beam search decoding
+
+Besides the two decoders shipped with TF, it is possible to use word beam search decoding.
+Using this decoder, the recognized words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) are still possible.
+
+Follow these instructions to integrate word beam search decoding:
+
+1. Clone repository [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch).
+2. Compile TF custom operation (follow instructions given in README).
+3. Copy binary `TFWordBeamSearch.so` from the CTCWordBeamSearch repository to the `src/` directory of the SimpleHTR repository.
+
+Word beam search can now be enabled by setting the corresponding command line argument.
+The dictionary is created (in training and validation mode) by using all words contained in the IAM dataset (i.e. also including words from validation set) and is saved into the file `data/corpus.txt`.
+Further, the list of word-characters can be found in the file `wordCharList.txt`.
+Beam width is set to 50 to conform with the beam width of vanilla beam search decoding.
+
+Using this configuration, a character error rate of 10% and a word accuracy of 81% is achieved.
 
 ## Train model 
 

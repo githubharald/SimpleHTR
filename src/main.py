@@ -3,7 +3,7 @@ import argparse
 import cv2
 import editdistance
 from DataLoader import DataLoader, Batch
-from Model import Model
+from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
 
 
@@ -13,6 +13,7 @@ class FilePaths:
 	fnAccuracy = '../model/accuracy.txt'
 	fnTrain = '../data/'
 	fnInfer = '../data/test.png'
+	fnCorpus = '../data/corpus.txt'
 
 
 def train(model, loader):
@@ -99,7 +100,14 @@ def main():
 	parser.add_argument("--train", help="train the NN", action="store_true")
 	parser.add_argument("--validate", help="validate the NN", action="store_true")
 	parser.add_argument("--beamsearch", help="use beam search instead of best path decoding", action="store_true")
+	parser.add_argument("--wordbeamsearch", help="use word beam search instead of best path decoding", action="store_true")
 	args = parser.parse_args()
+
+	decoderType = DecoderType.BestPath
+	if args.beamsearch:
+		decoderType = DecoderType.BeamSearch
+	elif args.wordbeamsearch:
+		decoderType = DecoderType.WordBeamSearch
 
 	# train or validate on IAM dataset	
 	if args.train or args.validate:
@@ -108,19 +116,22 @@ def main():
 
 		# save characters of model for inference mode
 		open(FilePaths.fnCharList, 'w').write(str().join(loader.charList))
+		
+		# save words contained in dataset into file
+		open(FilePaths.fnCorpus, 'w').write(str(' ').join(loader.trainWords + loader.validationWords))
 
 		# execute training or validation
 		if args.train:
-			model = Model(loader.charList, args.beamsearch)
+			model = Model(loader.charList, decoderType)
 			train(model, loader)
 		elif args.validate:
-			model = Model(loader.charList, args.beamsearch, mustRestore=True)
+			model = Model(loader.charList, decoderType, mustRestore=True)
 			validate(model, loader)
 
 	# infer text on test image
 	else:
 		print(open(FilePaths.fnAccuracy).read())
-		model = Model(open(FilePaths.fnCharList).read(), args.beamsearch, mustRestore=True)
+		model = Model(open(FilePaths.fnCharList).read(), decoderType, mustRestore=True)
 		infer(model, FilePaths.fnInfer)
 
 
