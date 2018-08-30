@@ -48,7 +48,7 @@ The following illustration shows a sample for which word beam search is able to 
 Follow these instructions to integrate word beam search decoding:
 
 1. Clone repository [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch).
-2. Compile TF custom operation (follow instructions given in README).
+2. Compile custom TF operation (follow instructions given in README).
 3. Copy binary `TFWordBeamSearch.so` from the CTCWordBeamSearch repository to the `src/` directory of the SimpleHTR repository.
 
 Word beam search can now be enabled by setting the corresponding command line argument.
@@ -154,5 +154,4 @@ If you need a better accuracy, here are some ideas how to improve it:
 * I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score.
 * I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset.
 * Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
-* I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the TF operation from source.
-
+* I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source.
