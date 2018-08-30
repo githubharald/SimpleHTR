@@ -6,7 +6,7 @@ As these word-images are smaller than images of complete text-lines, the NN can 
 2/3 of the words from the validation-set are correctly recognized and the character error rate is around 13%.
 I will give some hints how to extend the model in case you need larger input-images (e.g. to recognize text-lines) or want better recognition accuracy.
 
-![img](./doc/htr.png)
+![htr](./doc/htr.png)
 
 
 ## Run demo
@@ -16,7 +16,7 @@ Afterwards, go to the `src/` directory and run ```python main.py```.
 The input image and the expected output is shown below.
 Tested with TF 1.3 on Ubuntu 16.04.
 
-![img](./data/test.png)
+![test](./data/test.png)
 
 ```
 > python main.py
@@ -41,6 +41,9 @@ Two examples: if you want to infer using beam search, execute `python main.py --
 
 Besides the two decoders shipped with TF, it is possible to use word beam search decoding.
 Using this decoder, the recognized words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) are still possible.
+The following illustration shows a sample for which word beam search is able to recognize the correct text, while the other decoders fail (BP=best path, VBS=vanilla beam search, WBS=word beam search).
+
+![decoder_comparison](./doc/decoder_comparison.png)
 
 Follow these instructions to integrate word beam search decoding:
 
@@ -127,7 +130,7 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 * The CTC layer either calculates the loss value given the matrix and the ground-truth text (when training), or it decodes the matrix to the final text with best path decoding or beam search decoding (when inferring)
 * Batch size is set to 50
 
-![img](./doc/nn_overview.png)
+![nn_overview](./doc/nn_overview.png)
 
 
 ### Improve accuracy
