@@ -40,8 +40,8 @@ Two examples: if you want to infer using beam search, execute `python main.py --
 ## Integrate word beam search decoding
 
 Besides the two decoders shipped with TF, it is possible to use word beam search decoding.
-Using this decoder, the recognized words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) are still possible.
-The following illustration shows a sample for which word beam search is able to recognize the correct text, while the other decoders fail (BP=best path, VBS=vanilla beam search, WBS=word beam search).
+Using this decoder, words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) can still be recognized.
+The following illustration shows a sample for which word beam search is able to recognize the correct text, while the other decoders fail.
 
 ![decoder_comparison](./doc/decoder_comparison.png)
 
