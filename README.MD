@@ -112,6 +112,7 @@ Character error rate: 13.956289%. Word accuracy: 67.721739%.
 ### Other datasets
 
 Either convert your dataset to the IAM format (look at `words.txt` and the corresponding directory structure) or change the class `DataLoader` according to your dataset format.
+More information can be found in [this article](https://medium.com/@harald_scheidl/27648fb18519).
 
 
 ## Information about model
@@ -153,6 +154,7 @@ If you need a better accuracy, here are some ideas how to improve it:
 * I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source.
 * I get the error message "... ModuleNotFoundError: No module named 'editdistance'": you have to install the mentioned module by executing `pip install editdistance`.
 * Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
-* I want to recognize text for complete lines/sentences: you have to increase the size of NN, especially the width of the input image (e.g. 800px) and the number of time-steps (e.g. 100) of the output matrix.
-* I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score.
-* I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset.
+* I want to recognize text for complete lines/sentences: either you segment the line into words. Or you have to increase the size of NN, especially the width of the input image (e.g. 800px) and the number of time-steps (e.g. 100) of the output matrix. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
+* I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
+* I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
+
