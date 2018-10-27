@@ -12,6 +12,7 @@ I will give some hints how to extend the model in case you need larger input-ima
 ## Run demo
 
 Go to the `model/` directory and unzip the file `model.zip` (pre-trained on the IAM dataset).
+Take care that the unzipped files are placed directly into the `model/` directory and not some subdirectory created by the unzip-program.
 Afterwards, go to the `src/` directory and run ```python main.py```.
 The input image and the expected output is shown below.
 Tested with TF 1.3 on Ubuntu 16.04.
