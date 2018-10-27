@@ -1,5 +1,4 @@
-Please have a look at the FAQ section in the README - maybe your question is already answered there.
-
+Please have a look at the FAQ section in the README - maybe your question is already answered there. 
 Only issues concerning the repositories code will be answered.
 The following questions will not be answered:
 * How to convert dataset X into IAM format?
