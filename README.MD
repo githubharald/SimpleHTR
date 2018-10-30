@@ -40,7 +40,7 @@ Two examples: if you want to infer using beam search, execute `python main.py --
 
 ## Integrate word beam search decoding
 
-Besides the two decoders shipped with TF, it is possible to use word beam search decoding.
+Besides the two decoders shipped with TF, it is possible to use word beam search decoding \[4\].
 Using this decoder, words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) can still be recognized.
 The following illustration shows a sample for which word beam search is able to recognize the correct text, while the other decoders fail.
 
@@ -63,7 +63,7 @@ Using this configuration, a character error rate of 10% and a word accuracy of 8
 
 ### IAM dataset
 
-The data-loader expects the IAM dataset (or any other dataset that is compatible with it) in the `data/` directory.
+The data-loader expects the IAM dataset \[5\] (or any other dataset that is compatible with it) in the `data/` directory.
 Follow these instructions to get the dataset:
 
 1. Register for free at this [website](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database).
@@ -120,7 +120,7 @@ More information can be found in [this article](https://medium.com/@harald_schei
 
 ### Overview
 
-The model is a stripped-down version of the HTR system I implemented for my thesis.
+The model \[1\] is a stripped-down version of the HTR system I implemented for my thesis \[2\]\[3\].
 What remains is what I think is the bare minimum to recognize text with an acceptable accuracy.
 The implementation only depends on numpy, cv2 and tensorflow imports.
 It consists of 5 CNN layers, 2 RNN (LSTM) layers and the CTC loss and decoding layer.
@@ -138,25 +138,36 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 ### Improve accuracy
 
 Around 68% of the words from the IAM dataset are correctly recognized by the NN when using vanilla beam search decoding.
-If you need a better accuracy, here are some ideas how to improve it:
+If you need a better accuracy, here are some ideas how to improve it \[2\]:
 
 * Data augmentation: increase dataset-size by applying further (random) transformations to the input images. At the moment, only random distortions are performed.
 * Remove cursive writing style in the input images (see [DeslantImg](https://github.com/githubharald/DeslantImg)).
 * Increase input size (if input of NN is large enough, complete text-lines can be used).
 * Add more CNN layers.
 * Replace LSTM by 2D-LSTM.
-* Decoder: use token passing or word beam search decoding (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words.
+* Decoder: use token passing or word beam search decoding \[4\] (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words.
 * Text correction: if the recognized word is not contained in a dictionary, search for the most similar one.
 
 
 ## FAQ
 
-* I get the error message "Exception: No saved model found in: ... ": unzip the file `model/model.zip`. All files contained must be placed directly into the `model/` directory and **not** in some subdirectory created by the unzip-program.
-* I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source.
-* I get the error message "... ModuleNotFoundError: No module named 'editdistance'": you have to install the mentioned module by executing `pip install editdistance`.
-* Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
-* I want to recognize text of line or sentence images: this is not possible for such a small input image size.
-For more information read [this article](https://medium.com/@harald_scheidl/27648fb18519).
-* I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
-* I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
+1. I get the error message "Exception: No saved model found in: ... ": unzip the file `model/model.zip`. All files contained must be placed directly into the `model/` directory and **not** in some subdirectory created by the unzip-program.
+2. I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source.
+3. I get the error message "... ModuleNotFoundError: No module named 'editdistance'": you have to install the mentioned module by executing `pip install editdistance`.
+4. Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
+5. I want to recognize text of line (or sentence) images: this is not possible with the provided model. The size of the input image is too small. For more information read [this article](https://medium.com/@harald_scheidl/27648fb18519).
+6. I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
+7. I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
 
+
+## References
+
+\[1\] [Build a Handwritten Text Recognition System using TensorFlow](https://towardsdatascience.com/2326a3487cd5)
+
+\[2\] [Scheidl - Handwritten Text Recognition in Historical Documents](https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742)
+
+\[3\] [Shi - An End-to-End Trainable Neural Network for Image-based Sequence Recognition and Its Application to Scene Text Recognition](https://arxiv.org/pdf/1507.05717.pdf)
+
+\[4\] [Scheidl - Word Beam Search: A Connectionist Temporal Classification Decoding Algorithm](https://repositum.tuwien.ac.at/obvutwoa/download/pdf/2774578)
+
+\[5\] [Marti - The IAM-database: an English sentence database for offline handwriting recognition](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database)
