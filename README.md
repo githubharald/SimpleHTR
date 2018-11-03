@@ -13,9 +13,9 @@ I will give some hints how to extend the model in case you need larger input-ima
 
 Go to the `model/` directory and unzip the file `model.zip` (pre-trained on the IAM dataset).
 Take care that the unzipped files are placed directly into the `model/` directory and not some subdirectory created by the unzip-program.
-Afterwards, go to the `src/` directory and run ```python main.py```.
+Afterwards, go to the `src/` directory and run `python main.py`.
 The input image and the expected output is shown below.
-Tested with TF 1.3 on Ubuntu 16.04.
+Tested with Python 3 and TF 1.3 on Ubuntu 16.04.
 
 ![test](./data/test.png)
 
@@ -158,6 +158,7 @@ If you need a better accuracy, here are some ideas how to improve it \[2\]:
 5. I want to recognize text of line (or sentence) images: this is not possible with the provided model. The size of the input image is too small. For more information read [this article](https://medium.com/@harald_scheidl/27648fb18519).
 6. I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
 7. I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
+8. I get an error when running the script more than once from an interactive Python session: do **not** call function `main()` in file `main.py` from an interactive session, as the TF computation graph is created multiple times when calling `main()` multiple times. Run the script by executing `python main.py` instead.
 
 
 ## References
