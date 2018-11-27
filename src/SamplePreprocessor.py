@@ -19,8 +19,8 @@ def preprocess(img, imgSize, dataAugmentation=False):
 	# create target image and copy sample image into it
 	(wt, ht) = imgSize
 	(h, w) = img.shape
-	fx = w / wt
-	fy = h / ht
+	fx = float(w) / wt
+	fy = float(h) / ht
 	f = max(fx, fy)
 	newSize = (max(min(wt, int(w / f)), 1), max(min(ht, int(h / f)), 1)) # scale according to f (result at least 1 and at most wt or ht)
 	img = cv2.resize(img, newSize)
