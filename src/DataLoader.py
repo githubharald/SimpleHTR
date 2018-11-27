@@ -1,3 +1,4 @@
+import os
 import random
 import numpy as np
 import cv2
@@ -34,6 +35,8 @@ class DataLoader:
 	
 		f=open(filePath+'words.txt')
 		chars = set()
+		bad_samples = []
+		bad_samples_reference = ['a01-117-05-02.png', 'r06-022-03-05.png']
 		for line in f:
 			# ignore comment line
 			if not line or line[0]=='#':
@@ -50,8 +53,15 @@ class DataLoader:
 			gtText = ' '.join(lineSplit[8:])[:maxTextLen]
 			chars = chars.union(set(list(gtText)))
 
+			# check if image is not empty
+			if not os.path.getsize(fileName):
+				bad_samples.append(lineSplit[0] + '.png')
+				continue
 			# put sample into list
 			self.samples.append(Sample(gtText, fileName))
+		if set(bad_samples) != set(bad_samples_reference):
+			print("Warning, damaged images found:", bad_samples)
+			print("Damaged images expected:", bad_samples_reference)
 
 		# split into training and validation set: 95% - 5%
 		splitIdx = int(0.95 * len(self.samples))
