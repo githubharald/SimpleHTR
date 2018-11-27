@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 import sys
 import argparse
 import cv2
@@ -79,8 +82,8 @@ def validate(model, loader):
 			print('[OK]' if dist==0 else '[ERR:%d]' % dist,'"' + batch.gtTexts[i] + '"', '->', '"' + recognized[i] + '"')
 	
 	# print validation result
-	charErrorRate = float(numCharErr) / numCharTotal
-	wordAccuracy = float(numWordOK) / numWordTotal
+	charErrorRate = numCharErr / numCharTotal
+	wordAccuracy = numWordOK / numWordTotal
 	print('Character error rate: %f%%. Word accuracy: %f%%.' % (charErrorRate*100.0, wordAccuracy*100.0))
 	return charErrorRate
 

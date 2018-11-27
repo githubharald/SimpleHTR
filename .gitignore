@@ -4,3 +4,4 @@ src/__pycache__/
 model/checkpoint
 model/snapshot-*
 *.so
+*.pyc

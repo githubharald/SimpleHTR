@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 import os
 import random
 import numpy as np
@@ -57,8 +60,11 @@ class DataLoader:
 			if not os.path.getsize(fileName):
 				bad_samples.append(lineSplit[0] + '.png')
 				continue
+
 			# put sample into list
 			self.samples.append(Sample(gtText, fileName))
+
+		# some images in the IAM dataset are known to be damaged, don't show warning for them
 		if set(bad_samples) != set(bad_samples_reference):
 			print("Warning, damaged images found:", bad_samples)
 			print("Damaged images expected:", bad_samples_reference)
