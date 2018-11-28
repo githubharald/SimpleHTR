@@ -145,6 +145,7 @@ If you need a better accuracy, here are some ideas how to improve it \[2\]:
 * Increase input size (if input of NN is large enough, complete text-lines can be used).
 * Add more CNN layers.
 * Replace LSTM by 2D-LSTM.
+* Replace optimizer: Adam improves the accuracy, however, the number of training epochs increases ([see discussion](https://github.com/githubharald/SimpleHTR/issues/27)).
 * Decoder: use token passing or word beam search decoding \[4\] (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words.
 * Text correction: if the recognized word is not contained in a dictionary, search for the most similar one.
 
