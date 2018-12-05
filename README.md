@@ -142,7 +142,7 @@ If you need a better accuracy, here are some ideas how to improve it \[2\]:
 
 * Data augmentation: increase dataset-size by applying further (random) transformations to the input images. At the moment, only random distortions are performed.
 * Remove cursive writing style in the input images (see [DeslantImg](https://github.com/githubharald/DeslantImg)).
-* Increase input size (if input of NN is large enough, complete text-lines can be used).
+* Increase input size (if input of NN is large enough, complete text-lines can be used, see [lamhoangtung/LineHTR](https://github.com/lamhoangtung/LineHTR)).
 * Add more CNN layers.
 * Replace LSTM by 2D-LSTM.
 * Replace optimizer: Adam improves the accuracy, however, the number of training epochs increases ([see discussion](https://github.com/githubharald/SimpleHTR/issues/27)).
@@ -156,7 +156,7 @@ If you need a better accuracy, here are some ideas how to improve it \[2\]:
 2. I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source.
 3. I get the error message "... ModuleNotFoundError: No module named 'editdistance'": you have to install the mentioned module by executing `pip install editdistance`.
 4. Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
-5. I want to recognize text of line (or sentence) images: this is not possible with the provided model. The size of the input image is too small. For more information read [this article](https://medium.com/@harald_scheidl/27648fb18519).
+5. I want to recognize text of line (or sentence) images: this is not possible with the provided model. The size of the input image is too small. For more information read [this article](https://medium.com/@harald_scheidl/27648fb18519) or have a look at the [lamhoangtung/LineHTR](https://github.com/lamhoangtung/LineHTR) repository.
 6. I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
 7. I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
 8. I get an error when running the script more than once from an interactive Python session: do **not** call function `main()` in file `main.py` from an interactive session, as the TF computation graph is created multiple times when calling `main()` multiple times. Run the script by executing `python main.py` instead.
