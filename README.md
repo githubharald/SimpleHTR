@@ -15,7 +15,6 @@ Go to the `model/` directory and unzip the file `model.zip` (pre-trained on the 
 Take care that the unzipped files are placed directly into the `model/` directory and not some subdirectory created by the unzip-program.
 Afterwards, go to the `src/` directory and run `python main.py`.
 The input image and the expected output is shown below.
-Tested with Python 3 and TF 1.3 on Ubuntu 16.04.
 
 ![test](./data/test.png)
 
@@ -25,6 +24,12 @@ Validation character error rate of saved model: 13.956289%
 Init with stored values from ../model/snapshot-32
 Recognized: "little"
 ```
+
+Tested with:
+
+* Python 2 and Python 3
+* TF 1.3, 1.10 and 1.12
+* Ubuntu 16.04 and Windows 7
 
 
 ## Command line arguments
