@@ -91,10 +91,10 @@ def validate(model, loader):
 def infer(model, fnImg):
 	"recognize text in image provided by file path"
 	img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
-	batch = Batch(None, [img] * Model.batchSize) # fill all batch elements with same input image
-	(recognized, probability) = model.inferBatch(batch, True) # recognize text
-	print('Recognized:', '"' + recognized[0] + '"') # all batch elements hold same result
-	print('Probability:', probability[0]) # all batch elements hold same result
+	batch = Batch(None, [img])
+	(recognized, probability) = model.inferBatch(batch, True)
+	print('Recognized:', '"' + recognized[0] + '"')
+	print('Probability:', probability[0])
 
 
 def main():
