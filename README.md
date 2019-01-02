@@ -23,6 +23,7 @@ The input image and the expected output is shown below.
 Validation character error rate of saved model: 13.956289%
 Init with stored values from ../model/snapshot-32
 Recognized: "little"
+Probability: 0.86143184
 ```
 
 Tested with:

@@ -87,6 +87,7 @@ class DataLoader:
 		# list of all chars in dataset
 		self.charList = sorted(list(chars))
 
+
 	def truncateLabel(self, text, maxTextLen):
 		# ctc_loss can't compute loss if it cannot find a mapping between text label and input 
 		# labels. Repeat letters cost double because of the blank symbol needing to be inserted.
@@ -100,6 +101,7 @@ class DataLoader:
 			if cost > maxTextLen:
 				return text[:i]
 		return text
+
 
 	def trainSet(self):
 		"switch to randomly chosen subset of training set"

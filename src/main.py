@@ -70,7 +70,7 @@ def validate(model, loader):
 		iterInfo = loader.getIteratorInfo()
 		print('Batch:', iterInfo[0],'/', iterInfo[1])
 		batch = loader.getNext()
-		recognized = model.inferBatch(batch)
+		(recognized, _) = model.inferBatch(batch)
 		
 		print('Ground truth -> Recognized')	
 		for i in range(len(recognized)):
@@ -92,8 +92,9 @@ def infer(model, fnImg):
 	"recognize text in image provided by file path"
 	img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
 	batch = Batch(None, [img] * Model.batchSize) # fill all batch elements with same input image
-	recognized = model.inferBatch(batch) # recognize text
+	(recognized, probability) = model.inferBatch(batch, True) # recognize text
 	print('Recognized:', '"' + recognized[0] + '"') # all batch elements hold same result
+	print('Probability:', probability[0]) # all batch elements hold same result
 
 
 def main():

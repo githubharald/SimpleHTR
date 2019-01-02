@@ -2,6 +2,7 @@ from __future__ import division
 from __future__ import print_function
 
 import sys
+import numpy as np
 import tensorflow as tf
 
 
@@ -34,7 +35,7 @@ class Model:
 		rnnOut3d = self.setupRNN(cnnOut4d)
 
 		# CTC
-		(self.loss, self.decoder) = self.setupCTC(rnnOut3d)
+		(self.loss, self.lossPerElement, self.decoder) = self.setupCTC(rnnOut3d)
 
 		# optimizer for NN parameters
 		self.batchesTrained = 0
@@ -92,17 +93,23 @@ class Model:
 	def setupCTC(self, ctcIn3d):
 		"create CTC loss and decoder and return them"
 		# BxTxC -> TxBxC
-		ctcIn3dTBC = tf.transpose(ctcIn3d, [1, 0, 2])
+		self.ctcIn3dTBC = tf.transpose(ctcIn3d, [1, 0, 2])
 		# ground truth text as sparse tensor
 		self.gtTexts = tf.SparseTensor(tf.placeholder(tf.int64, shape=[None, 2]) , tf.placeholder(tf.int32, [None]), tf.placeholder(tf.int64, [2]))
+
 		# calc loss for batch
 		self.seqLen = tf.placeholder(tf.int32, [None])
-		loss = tf.nn.ctc_loss(labels=self.gtTexts, inputs=ctcIn3dTBC, sequence_length=self.seqLen, ctc_merge_repeated=True)
+		loss = tf.nn.ctc_loss(labels=self.gtTexts, inputs=self.ctcIn3dTBC, sequence_length=self.seqLen, ctc_merge_repeated=True)
+
+		# calc loss for each element to compute label probability
+		self.savedCtcInput = tf.placeholder(tf.float32, shape=[Model.maxTextLen, Model.batchSize, len(self.charList) + 1])
+		lossPerElement = tf.nn.ctc_loss(labels=self.gtTexts, inputs=self.savedCtcInput, sequence_length=self.seqLen, ctc_merge_repeated=True)
+
 		# decoder: either best path decoding or beam search decoding
 		if self.decoderType == DecoderType.BestPath:
-			decoder = tf.nn.ctc_greedy_decoder(inputs=ctcIn3dTBC, sequence_length=self.seqLen)
+			decoder = tf.nn.ctc_greedy_decoder(inputs=self.ctcIn3dTBC, sequence_length=self.seqLen)
 		elif self.decoderType == DecoderType.BeamSearch:
-			decoder = tf.nn.ctc_beam_search_decoder(inputs=ctcIn3dTBC, sequence_length=self.seqLen, beam_width=50, merge_repeated=False)
+			decoder = tf.nn.ctc_beam_search_decoder(inputs=self.ctcIn3dTBC, sequence_length=self.seqLen, beam_width=50, merge_repeated=False)
 		elif self.decoderType == DecoderType.WordBeamSearch:
 			# import compiled word beam search operation (see https://github.com/githubharald/CTCWordBeamSearch)
 			word_beam_search_module = tf.load_op_library('TFWordBeamSearch.so')
@@ -116,7 +123,7 @@ class Model:
 			decoder = word_beam_search_module.word_beam_search(tf.nn.softmax(ctcIn3dTBC, dim=2), 50, 'Words', 0.0, corpus.encode('utf8'), chars.encode('utf8'), wordChars.encode('utf8'))
 
 		# return a CTC operation to compute the loss and a CTC operation to decode the RNN output
-		return (tf.reduce_mean(loss), decoder)
+		return (tf.reduce_mean(loss), lossPerElement, decoder)
 
 
 	def setupTF(self):
@@ -206,10 +213,23 @@ class Model:
 		return lossVal
 
 
-	def inferBatch(self, batch):
+	def inferBatch(self, batch, calcProbability=False):
 		"feed a batch into the NN to recngnize the texts"
-		decoded = self.sess.run(self.decoder, { self.inputImgs : batch.imgs, self.seqLen : [Model.maxTextLen] * Model.batchSize } )
-		return self.decoderOutputToText(decoded)
+		
+		# decode, optionally save RNN output
+		evalList = [self.decoder] + ([self.ctcIn3dTBC] if calcProbability else [])
+		evalRes = self.sess.run([self.decoder, self.ctcIn3dTBC], { self.inputImgs : batch.imgs, self.seqLen : [Model.maxTextLen] * Model.batchSize } )
+		decoded = evalRes[0]
+		texts = self.decoderOutputToText(decoded)
+		
+		# feed RNN output and recognized text into CTC to compute labeling probability
+		probs = None
+		if calcProbability:
+			sparse = self.toSparse(texts)
+			ctcInput = evalRes[1]
+			lossVals = self.sess.run(self.lossPerElement, { self.savedCtcInput : ctcInput, self.gtTexts : sparse , self.seqLen : [Model.maxTextLen] * Model.batchSize} )
+			probs = np.exp(-lossVals)
+		return (texts, probs)
 	
 
 	def save(self):
