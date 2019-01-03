@@ -211,7 +211,7 @@ class Model:
 		return lossVal
 
 
-	def inferBatch(self, batch, calcProbability=False):
+	def inferBatch(self, batch, calcProbability=False, probabilityOfGT=False):
 		"feed a batch into the NN to recngnize the texts"
 		
 		# decode, optionally save RNN output
@@ -225,7 +225,7 @@ class Model:
 		# feed RNN output and recognized text into CTC loss to compute labeling probability
 		probs = None
 		if calcProbability:
-			sparse = self.toSparse(texts)
+			sparse = self.toSparse(batch.gtTexts) if probabilityOfGT else self.toSparse(texts)
 			ctcInput = evalRes[1]
 			evalList = self.lossPerElement
 			feedDict = {self.savedCtcInput : ctcInput, self.gtTexts : sparse, self.seqLen : [Model.maxTextLen] * numBatchElements}
