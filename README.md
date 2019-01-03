@@ -155,6 +155,26 @@ If you need a better accuracy, here are some ideas how to improve it \[2\]:
 * Decoder: use token passing or word beam search decoding \[4\] (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words.
 * Text correction: if the recognized word is not contained in a dictionary, search for the most similar one.
 
+### Analyze model
+
+Run `python analyze.py` with the following arguments to analyze the image file `data/analyze.png` with the ground-truth text "are":
+
+* `--relevance`: compute the pixel relevance for a the correct prediction.
+* `--invariance`: check if the model is invariant to horizontal translations of the text.
+* No argument provided: show the results.
+
+Results are shown in the plots below.
+The pixel relevance (left plot) shows how a pixel influences the score for the correct class.
+Red pixels vote for the correct class, while blue pixels vote against the correct class.
+It can be seen that the white space above vertical lines in images is important for the classifier to decide against the "i" character with its superscript dot.
+Draw a dot above the "a" (red region in plot) and you will get "aive" instead of "are".
+
+The second plot (right) shows how the probability of the ground-truth text changes when the text is shifted to the right.
+As can be seen, the model is not translation invariant, as all images from IAM are left-aligned.
+Adding data augmentation which uses random text-alignments can improve the translation invariance of the model.
+
+![analyze](./doc/analyze.png)
+
 
 ## FAQ
 
