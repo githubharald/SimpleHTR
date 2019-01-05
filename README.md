@@ -172,6 +172,7 @@ Draw a dot above the "a" (red region in plot) and you will get "aive" instead of
 The second plot (right) shows how the probability of the ground-truth text changes when the text is shifted to the right.
 As can be seen, the model is not translation invariant, as all training images from IAM are left-aligned.
 Adding data augmentation which uses random text-alignments can improve the translation invariance of the model.
+More information can be found in [this article](https://towardsdatascience.com/6c04864b8a98).
 
 ![analyze](./doc/analyze.png)
 
