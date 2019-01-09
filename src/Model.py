@@ -218,7 +218,7 @@ class Model:
 
 
 	def inferBatch(self, batch, calcProbability=False, probabilityOfGT=False):
-		"feed a batch into the NN to recngnize the texts"
+		"feed a batch into the NN to recognize the texts"
 		
 		# decode, optionally save RNN output
 		numBatchElements = len(batch.imgs)
