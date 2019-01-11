@@ -120,7 +120,7 @@ def showResults():
 	pixelRelevance = np.load(Constants.fnPixelRelevance)
 	plt.figure('Pixel relevance')
 	
-	plt.imshow(pixelRelevance, cmap=plt.cm.jet, vmin=-0.5, vmax=0.5)
+	plt.imshow(pixelRelevance, cmap=plt.cm.jet, vmin=-0.25, vmax=0.25)
 	plt.colorbar()
 	
 	img = cv2.imread(Constants.fnAnalyze, cv2.IMREAD_GRAYSCALE)
@@ -156,4 +156,4 @@ if __name__ == '__main__':
 	else:
 		print('Show results')
 		showResults()
-		
+
