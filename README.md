@@ -149,7 +149,7 @@ If you need a better accuracy, here are some ideas how to improve it \[2\]:
 * Data augmentation: increase dataset-size by applying further (random) transformations to the input images. At the moment, only random distortions are performed.
 * Remove cursive writing style in the input images (see [DeslantImg](https://github.com/githubharald/DeslantImg)).
 * Increase input size (if input of NN is large enough, complete text-lines can be used, see [lamhoangtung/LineHTR](https://github.com/lamhoangtung/LineHTR)).
-* Add more CNN layers ([see this issue for a possible implementation](https://github.com/githubharald/SimpleHTR/issues/38)).
+* Add more CNN layers ([see discussion](https://github.com/githubharald/SimpleHTR/issues/38)).
 * Replace LSTM by 2D-LSTM.
 * Replace optimizer: Adam improves the accuracy, however, the number of training epochs increases ([see discussion](https://github.com/githubharald/SimpleHTR/issues/27)).
 * Decoder: use token passing or word beam search decoding \[4\] (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words.
