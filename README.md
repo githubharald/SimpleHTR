@@ -3,7 +3,7 @@
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
 This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
 As these word-images are smaller than images of complete text-lines, the NN can be kept small and training on the CPU is feasible.
-2/3 of the words from the validation-set are correctly recognized and the character error rate is around 13%.
+3/4 of the words from the validation-set are correctly recognized and the character error rate is around 10%.
 I will give some hints how to extend the model in case you need larger input-images (e.g. to recognize text-lines) or want better recognition accuracy.
 
 ![htr](./doc/htr.png)
@@ -20,10 +20,10 @@ The input image and the expected output is shown below.
 
 ```
 > python main.py
-Validation character error rate of saved model: 13.956289%
-Init with stored values from ../model/snapshot-32
+Validation character error rate of saved model: 10.624916%
+Init with stored values from ../model/snapshot-38
 Recognized: "little"
-Probability: 0.86143184
+Probability: 0.96625507
 ```
 
 Tested with:
@@ -63,7 +63,7 @@ The dictionary is created (in training and validation mode) by using all words c
 Further, the (manually created) list of word-characters can be found in the file `model/wordCharList.txt`.
 Beam width is set to 50 to conform with the beam width of vanilla beam search decoding.
 
-Using this configuration, a character error rate of 10% and a word accuracy of 81% is achieved.
+Using this configuration, a character error rate of 8% and a word accuracy of 84% is achieved.
 
 ## Train model 
 
@@ -143,7 +143,7 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 ### Improve accuracy
 
-Around 68% of the words from the IAM dataset are correctly recognized by the NN when using vanilla beam search decoding.
+74% of the words from the IAM dataset are correctly recognized by the NN when using vanilla beam search decoding.
 If you need a better accuracy, here are some ideas how to improve it \[2\]:
 
 * Data augmentation: increase dataset-size by applying further (random) transformations to the input images. At the moment, only random distortions are performed.
