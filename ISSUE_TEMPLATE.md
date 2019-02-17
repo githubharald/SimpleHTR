@@ -1,9 +1,9 @@
-Please have a look at the FAQ section in the README - maybe your question is already answered there. 
-Only issues concerning the repositories code will be answered.
-The following questions will not be answered:
-* How to convert dataset X into IAM format?
-* How to modify the model to recognize text-lines/more characters/...?
-* General/theoretical questions regarding (handwritten) text recognition.
+I will close your issue without any comment if:
+* The answer could easily be found in the README / FAQ
+* The issue is not related to the code of this repository (like how to use some custom dataset)
+* You are not able to articulate yourself (a one-liner is not enough)
+* You don't fill out this issue template (see below)
+
 
 If you create a new issue, please provide the following information:
 
@@ -13,7 +13,7 @@ If you create a new issue, please provide the following information:
 * Operating system
 
 2. Issue
-* Which result/error did you get?
+* Which result / error did you get?
 * If you think the result is wrong - what result did you expect instead?
 * How to reproduce the issue?
 * Provide all necessary data
