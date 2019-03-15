@@ -101,10 +101,10 @@ def main():
 	"main function"
 	# optional command line args
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--train", help="train the NN", action="store_true")
-	parser.add_argument("--validate", help="validate the NN", action="store_true")
-	parser.add_argument("--beamsearch", help="use beam search instead of best path decoding", action="store_true")
-	parser.add_argument("--wordbeamsearch", help="use word beam search instead of best path decoding", action="store_true")
+	parser.add_argument('--train', help='train the NN', action='store_true')
+	parser.add_argument('--validate', help='validate the NN', action='store_true')
+	parser.add_argument('--beamsearch', help='use beam search instead of best path decoding', action='store_true')
+	parser.add_argument('--wordbeamsearch', help='use word beam search instead of best path decoding', action='store_true')
 	args = parser.parse_args()
 
 	decoderType = DecoderType.BestPath

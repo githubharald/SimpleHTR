@@ -28,7 +28,7 @@ class Model:
 		self.snapID = 0
 
 		# Whether to use normalization over a batch or a population
-		self.is_train = tf.placeholder(tf.bool, name="is_train");
+		self.is_train = tf.placeholder(tf.bool, name='is_train')
 
 		# input image batch
 		self.inputImgs = tf.placeholder(tf.float32, shape=(None, Model.imgSize[0], Model.imgSize[1]))

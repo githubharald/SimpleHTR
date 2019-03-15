@@ -6,3 +6,4 @@ model/snapshot-*
 notes/
 *.so
 *.pyc
+.idea/
