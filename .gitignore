@@ -7,3 +7,4 @@ notes/
 *.so
 *.pyc
 .idea/
+dump/

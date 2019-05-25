@@ -39,6 +39,7 @@ Tested with:
 * `--validate`: validate the NN, details see below.
 * `--beamsearch`: use vanilla beam search decoding (better, but slower) instead of best path decoding.
 * `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN.
+* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump/` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder).
 
 If neither `--train` nor `--validate` is specified, the NN infers the text from the test image (`data/test.png`).
 Two examples: if you want to infer using beam search, execute `python main.py --beamsearch`, while you have to execute `python main.py --train --beamsearch` if you want to train the NN and do the validation using beam search.

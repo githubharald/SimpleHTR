@@ -4,6 +4,7 @@ from __future__ import print_function
 import sys
 import numpy as np
 import tensorflow as tf
+import os
 
 
 class DecoderType:
@@ -20,8 +21,9 @@ class Model:
 	imgSize = (128, 32)
 	maxTextLen = 32
 
-	def __init__(self, charList, decoderType=DecoderType.BestPath, mustRestore=False):
+	def __init__(self, charList, decoderType=DecoderType.BestPath, mustRestore=False, dump=False):
 		"init model: add CNN, RNN and CTC and initialize TF"
+		self.dump = dump
 		self.charList = charList
 		self.decoderType = decoderType
 		self.mustRestore = mustRestore
@@ -217,14 +219,35 @@ class Model:
 		return lossVal
 
 
+	def dumpNNOutput(self, rnnOutput):
+		"dump the output of the NN to CSV file(s)"
+		dumpDir = '../dump/'
+		if not os.path.isdir(dumpDir):
+			os.mkdir(dumpDir)
+
+		# iterate over all batch elements and create a CSV file for each one
+		maxT, maxB, maxC = rnnOutput.shape
+		for b in range(maxB):
+			csv = ''
+			for t in range(maxT):
+				for c in range(maxC):
+					csv += str(rnnOutput[t, b, c]) + ';'
+				csv += '\n'
+			fn = dumpDir + 'rnnOutput_'+str(b)+'.csv'
+			print('Write dump of NN to file: ' + fn)
+			with open(fn, 'w') as f:
+				f.write(csv)
+
+
 	def inferBatch(self, batch, calcProbability=False, probabilityOfGT=False):
 		"feed a batch into the NN to recognize the texts"
 		
 		# decode, optionally save RNN output
 		numBatchElements = len(batch.imgs)
-		evalList = [self.decoder] + ([self.ctcIn3dTBC] if calcProbability else [])
+		evalRnnOutput = self.dump or calcProbability
+		evalList = [self.decoder] + ([self.ctcIn3dTBC] if evalRnnOutput else [])
 		feedDict = {self.inputImgs : batch.imgs, self.seqLen : [Model.maxTextLen] * numBatchElements, self.is_train: False}
-		evalRes = self.sess.run([self.decoder, self.ctcIn3dTBC], feedDict)
+		evalRes = self.sess.run(evalList, feedDict)
 		decoded = evalRes[0]
 		texts = self.decoderOutputToText(decoded, numBatchElements)
 		
@@ -237,6 +260,11 @@ class Model:
 			feedDict = {self.savedCtcInput : ctcInput, self.gtTexts : sparse, self.seqLen : [Model.maxTextLen] * numBatchElements, self.is_train: False}
 			lossVals = self.sess.run(evalList, feedDict)
 			probs = np.exp(-lossVals)
+
+		# dump the output of the NN to CSV file(s)
+		if self.dump:
+			self.dumpNNOutput(evalRes[1])
+
 		return (texts, probs)
 	
 
