@@ -5,9 +5,9 @@ import sys
 import argparse
 import cv2
 import editdistance
-from DataLoader import DataLoader, Batch
-from Model import Model, DecoderType
-from SamplePreprocessor import preprocess
+from src.DataLoader import DataLoader, Batch
+from src.Model import Model, DecoderType
+from src.SamplePreprocessor import preprocess
 
 
 class FilePaths:
@@ -95,7 +95,19 @@ def infer(model, fnImg):
 	(recognized, probability) = model.inferBatch(batch, True)
 	print('Recognized:', '"' + recognized[0] + '"')
 	print('Probability:', probability[0])
+	# return recognized[0], probability[0]
 
+def result (fnImg):
+	# fnImg = FilePaths.fnInfer
+	model = Model(open(FilePaths.fnCharList).read(), mustRestore=True)
+
+	"recognize text in image provided by file path"
+	img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
+	batch = Batch(None, [img])
+	(recognized, probability) = model.inferBatch(batch, True)
+	print('Recognized:', '"' + recognized[0] + '"')
+	print('Probability:', probability[0])
+	return recognized[0], probability[0]
 
 def main():
 	"main function"
@@ -138,7 +150,9 @@ def main():
 	else:
 		print(open(FilePaths.fnAccuracy).read())
 		model = Model(open(FilePaths.fnCharList).read(), decoderType, mustRestore=True, dump=args.dump)
+		# model = Model(open(FilePaths.fnCharList).read(), mustRestore=True)
 		infer(model, FilePaths.fnInfer)
+		# print("yasss ",	result())
 
 
 if __name__ == '__main__':
