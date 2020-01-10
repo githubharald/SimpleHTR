@@ -8,6 +8,9 @@ import editdistance
 from DataLoader import DataLoader, Batch
 from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
+from autocorrect import Speller
+
+spell = Speller(lang = 'en')
 
 
 class FilePaths:
@@ -24,7 +27,7 @@ def train(model, loader):
 	epoch = 0 # number of training epochs since start
 	bestCharErrorRate = float('inf') # best valdiation character error rate
 	noImprovementSince = 0 # number of epochs no improvement of character error rate occured
-	earlyStopping = 5 # stop training after this number of epochs without improvement
+	earlyStopping = 3 # stop training after this number of epochs without improvement
 	while True:
 		epoch += 1
 		print('Epoch:', epoch)
@@ -74,6 +77,7 @@ def validate(model, loader):
 		
 		print('Ground truth -> Recognized')	
 		for i in range(len(recognized)):
+            recognized[i] = spell(recognized[i])
 			numWordOK += 1 if batch.gtTexts[i] == recognized[i] else 0
 			numWordTotal += 1
 			dist = editdistance.eval(recognized[i], batch.gtTexts[i])
@@ -93,7 +97,7 @@ def infer(model, fnImg):
 	img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
 	batch = Batch(None, [img])
 	(recognized, probability) = model.inferBatch(batch, True)
-	print('Recognized:', '"' + recognized[0] + '"')
+	print('Recognized:', '"' + spell(recognized[0]) + '"')
 	print('Probability:', probability[0])
 
 
