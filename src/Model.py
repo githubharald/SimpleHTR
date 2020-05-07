@@ -5,7 +5,8 @@ import sys
 import numpy as np
 import tensorflow as tf
 import os
-
+# import tensorflow.compat.v1 as tf
+# tf.disable_v2_behavior()
 
 class DecoderType:
 	BestPath = 0
@@ -19,7 +20,7 @@ class Model:
 	# model constants
 	batchSize = 50
 	imgSize = (128, 32)
-	maxTextLen = 32
+	maxTextLen = 20
 
 	def __init__(self, charList, decoderType=DecoderType.BestPath, mustRestore=False, dump=False):
 		"init model: add CNN, RNN and CTC and initialize TF"
@@ -56,14 +57,15 @@ class Model:
 		cnnIn4d = tf.expand_dims(input=self.inputImgs, axis=3)
 
 		# list of parameters for the layers
-		kernelVals = [5, 5, 3, 3, 3]
+		kernelVals = [5, 5, 3, 3, 3] #[5, 5, 3, 3, 3] 
 		featureVals = [1, 32, 64, 128, 128, 256]
-		strideVals = poolVals = [(2,2), (2,2), (1,2), (1,2), (1,2)]
+		strideVals = poolVals = [(2,2), (2,2), (1,2), (1,2), (1,2)] # [(2,2), (2,2), (1,2), (1,2), (1,2)]
 		numLayers = len(strideVals)
 
 		# create layers
 		pool = cnnIn4d # input to first CNN layer
 		for i in range(numLayers):
+			print('Layer:'+str(i))
 			kernel = tf.Variable(tf.truncated_normal([kernelVals[i], kernelVals[i], featureVals[i], featureVals[i + 1]], stddev=0.1))
 			conv = tf.nn.conv2d(pool, kernel, padding='SAME',  strides=(1,1,1,1))
 			conv_norm = tf.layers.batch_normalization(conv, training=self.is_train)

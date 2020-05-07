@@ -24,7 +24,7 @@ def train(model, loader):
 	epoch = 0 # number of training epochs since start
 	bestCharErrorRate = float('inf') # best valdiation character error rate
 	noImprovementSince = 0 # number of epochs no improvement of character error rate occured
-	earlyStopping = 5 # stop training after this number of epochs without improvement
+	earlyStopping = 3 # stop training after this number of epochs without improvement
 	while True:
 		epoch += 1
 		print('Epoch:', epoch)
@@ -36,7 +36,7 @@ def train(model, loader):
 			iterInfo = loader.getIteratorInfo()
 			batch = loader.getNext()
 			loss = model.trainBatch(batch)
-			print('Batch:', iterInfo[0],'/', iterInfo[1], 'Loss:', loss)
+# 			print('Batch:', iterInfo[0],'/', iterInfo[1], 'Loss:', loss)
 
 		# validate
 		charErrorRate = validate(model, loader)
@@ -68,18 +68,18 @@ def validate(model, loader):
 	numWordTotal = 0
 	while loader.hasNext():
 		iterInfo = loader.getIteratorInfo()
-		print('Batch:', iterInfo[0],'/', iterInfo[1])
+# 		print('Batch:', iterInfo[0],'/', iterInfo[1])
 		batch = loader.getNext()
 		(recognized, _) = model.inferBatch(batch)
 		
-		print('Ground truth -> Recognized')	
+# 		print('Ground truth -> Recognized')	
 		for i in range(len(recognized)):
 			numWordOK += 1 if batch.gtTexts[i] == recognized[i] else 0
 			numWordTotal += 1
 			dist = editdistance.eval(recognized[i], batch.gtTexts[i])
 			numCharErr += dist
 			numCharTotal += len(batch.gtTexts[i])
-			print('[OK]' if dist==0 else '[ERR:%d]' % dist,'"' + batch.gtTexts[i] + '"', '->', '"' + recognized[i] + '"')
+# 			print('[OK]' if dist==0 else '[ERR:%d]' % dist,'"' + batch.gtTexts[i] + '"', '->', '"' + recognized[i] + '"')
 	
 	# print validation result
 	charErrorRate = numCharErr / numCharTotal
