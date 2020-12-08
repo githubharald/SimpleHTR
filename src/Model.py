@@ -260,14 +260,14 @@ class Model:
 			ctcInput = evalRes[1]
 			evalList = self.lossPerElement
 			feedDict = {self.savedCtcInput : ctcInput, self.gtTexts : sparse, self.seqLen : [Model.maxTextLen] * numBatchElements, self.is_train: False}
-			#lossVals = self.sess.run(evalList, feedDict)
-			#probs = np.exp(-lossVals)
+			lossVals = self.sess.run(evalList, feedDict)
+			probs = np.exp(-lossVals)
 
 		# dump the output of the NN to CSV file(s)
 		if self.dump:
 			self.dumpNNOutput(evalRes[1])
 
-		return (texts)
+		return (texts, probs)
 
 
 	def save(self):
