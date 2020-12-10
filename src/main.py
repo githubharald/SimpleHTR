@@ -2,10 +2,10 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import sys
 
 import cv2
 import editdistance
+
 from DataLoader import DataLoader, Batch
 from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
