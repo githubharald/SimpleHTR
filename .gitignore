@@ -1,5 +1,6 @@
 data/words/
 data/words.txt
+data/words.7z
 src/__pycache__/
 model/checkpoint
 model/snapshot-*
