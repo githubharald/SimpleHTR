@@ -31,8 +31,9 @@ Probability: 0.96625507
 Tested with:
 
 * Python 2 and Python 3
-* TF 1.3, 1.10 and 1.12
-* Ubuntu 16.04 and Windows 7
+* TF 1.3, 1.10 and 1.12 (commit <= 97c2512)
+* TF 1.14, 1.15, 2.3.1 (commit >= ec00c1a)
+* Ubuntu 16.04, 19.04 and Windows 7, 10
 
 
 ## Command line arguments
