@@ -1,21 +1,18 @@
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 
 import cv2
 import editdistance
 
-from DataLoader import DataLoader, Batch
+from DataLoaderIAM import DataLoaderIAM, Batch
 from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
+from path import Path
 
 
 class FilePaths:
     "filenames and paths to data"
     fnCharList = '../model/charList.txt'
     fnAccuracy = '../model/accuracy.txt'
-    fnTrain = '../data/'
     fnInfer = '../data/test.png'
     fnCorpus = '../data/corpus.txt'
 
@@ -25,7 +22,7 @@ def train(model, loader):
     epoch = 0  # number of training epochs since start
     bestCharErrorRate = float('inf')  # best valdiation character error rate
     noImprovementSince = 0  # number of epochs no improvement of character error rate occured
-    earlyStopping = 5  # stop training after this number of epochs without improvement
+    earlyStopping = 25  # stop training after this number of epochs without improvement
     while True:
         epoch += 1
         print('Epoch:', epoch)
@@ -37,7 +34,7 @@ def train(model, loader):
             iterInfo = loader.getIteratorInfo()
             batch = loader.getNext()
             loss = model.trainBatch(batch)
-            print('Batch:', iterInfo[0], '/', iterInfo[1], 'Loss:', loss)
+            print(f'Epoch: {epoch} Batch: {iterInfo[0]}/{iterInfo[1]} Loss: {loss}')
 
         # validate
         charErrorRate = validate(model, loader)
@@ -49,14 +46,14 @@ def train(model, loader):
             noImprovementSince = 0
             model.save()
             open(FilePaths.fnAccuracy, 'w').write(
-                'Validation character error rate of saved model: %f%%' % (charErrorRate * 100.0))
+                f'Validation character error rate of saved model: {charErrorRate * 100.0}%')
         else:
-            print('Character error rate not improved')
+            print(f'Character error rate not improved, best so far: {charErrorRate * 100.0}%')
             noImprovementSince += 1
 
         # stop training if no more improvement in the last x epochs
         if noImprovementSince >= earlyStopping:
-            print('No more improvement since %d epochs. Training stopped.' % earlyStopping)
+            print(f'No more improvement since {earlyStopping} epochs. Training stopped.')
             break
 
 
@@ -70,7 +67,7 @@ def validate(model, loader):
     numWordTotal = 0
     while loader.hasNext():
         iterInfo = loader.getIteratorInfo()
-        print('Batch:', iterInfo[0], '/', iterInfo[1])
+        print(f'Batch: {iterInfo[0]} / {iterInfo[1]}')
         batch = loader.getNext()
         (recognized, _) = model.inferBatch(batch)
 
@@ -87,7 +84,7 @@ def validate(model, loader):
     # print validation result
     charErrorRate = numCharErr / numCharTotal
     wordAccuracy = numWordOK / numWordTotal
-    print('Character error rate: %f%%. Word accuracy: %f%%.' % (charErrorRate * 100.0, wordAccuracy * 100.0))
+    print(f'Character error rate: {charErrorRate * 100.0}%. Word accuracy: {wordAccuracy * 100.0}%.')
     return charErrorRate
 
 
@@ -96,8 +93,8 @@ def infer(model, fnImg):
     img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
     batch = Batch(None, [img])
     (recognized, probability) = model.inferBatch(batch, True)
-    print('Recognized:', '"' + recognized[0] + '"')
-    print('Probability:', probability[0])
+    print(f'Recognized: "{recognized[0]}"')
+    print(f'Probability: {probability[0]}')
 
 
 def main():
@@ -110,6 +107,9 @@ def main():
     parser.add_argument('--wordbeamsearch', help='use word beam search instead of best path decoding',
                         action='store_true')
     parser.add_argument('--dump', help='dump output of NN to CSV file(s)', action='store_true')
+    parser.add_argument('--fast', help='use lmdb to load images', action='store_true')
+    parser.add_argument('--data_dir', help='directory containing IAM dataset', type=Path, required=False)
+    parser.add_argument('--batch_size', help='batch size', type=int, default=100)
 
     args = parser.parse_args()
 
@@ -122,7 +122,7 @@ def main():
     # train or validate on IAM dataset
     if args.train or args.validate:
         # load training data, create TF model
-        loader = DataLoader(FilePaths.fnTrain, Model.batchSize, Model.imgSize, Model.maxTextLen)
+        loader = DataLoaderIAM(args.data_dir, args.batch_size, Model.imgSize, Model.maxTextLen, args.fast)
 
         # save characters of model for inference mode
         open(FilePaths.fnCharList, 'w').write(str().join(loader.charList))

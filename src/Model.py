@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import os
 import sys
@@ -20,7 +17,6 @@ class Model:
     "minimalistic TF model for HTR"
 
     # model constants
-    batchSize = 50
     imgSize = (128, 32)
     maxTextLen = 32
 
@@ -45,10 +41,9 @@ class Model:
 
         # setup optimizer to train NN
         self.batchesTrained = 0
-        self.learningRate = tf.compat.v1.placeholder(tf.float32, shape=[])
         self.update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(self.update_ops):
-            self.optimizer = tf.compat.v1.train.RMSPropOptimizer(self.learningRate).minimize(self.loss)
+            self.optimizer = tf.compat.v1.train.AdamOptimizer().minimize(self.loss)
 
         # initialize TF
         (self.sess, self.saver) = self.setupTF()
@@ -221,12 +216,9 @@ class Model:
         "feed a batch into the NN to train it"
         numBatchElements = len(batch.imgs)
         sparse = self.toSparse(batch.gtTexts)
-        rate = 0.01 if self.batchesTrained < 10 else (
-            0.001 if self.batchesTrained < 10000 else 0.0001)  # decay learning rate
         evalList = [self.optimizer, self.loss]
-        feedDict = {self.inputImgs: batch.imgs, self.gtTexts: sparse,
-                    self.seqLen: [Model.maxTextLen] * numBatchElements, self.learningRate: rate, self.is_train: True}
-        (_, lossVal) = self.sess.run(evalList, feedDict)
+        feedDict = {self.inputImgs: batch.imgs, self.gtTexts: sparse, self.seqLen: [Model.maxTextLen] * numBatchElements, self.is_train: True}
+        _, lossVal = self.sess.run(evalList, feedDict)
         self.batchesTrained += 1
         return lossVal
 
