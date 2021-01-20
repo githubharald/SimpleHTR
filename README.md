@@ -1,6 +1,8 @@
 # Handwritten Text Recognition with TensorFlow
 
-**Update 2020: code is compatible with TF2**
+* **Update 2021: more robust model, faster dataloader, Python3 only**
+* **Update 2020: code is compatible with TF2**
+
 
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
 This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
@@ -22,15 +24,15 @@ The input image and the expected output is shown below.
 
 ```
 > python main.py
-Validation character error rate of saved model: 10.624916%
-Init with stored values from ../model/snapshot-38
-Recognized: "little"
-Probability: 0.96625507
+Validation character error rate of saved model: 11.118344571029994%
+Init with stored values from ../model/snapshot-76
+Recognized: "Hello"
+Probability: 0.8462573289871216
 ```
 
 Tested with:
 
-* Python 2 and Python 3
+* Python 2  (commit <= 97c2512) and Python 3
 * TF 1.3, 1.10 and 1.12 (commit <= 97c2512)
 * TF 1.14, 1.15, 2.3.1 (commit >= ec00c1a)
 * Ubuntu 16.04, 18.04 and Windows 7, 10
@@ -43,6 +45,9 @@ Tested with:
 * `--beamsearch`: use vanilla beam search decoding (better, but slower) instead of best path decoding.
 * `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN.
 * `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump/` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder).
+* `--batch_size`: batch size
+* `--fast`: use lmdb to load images (faster than loading image files from disk)
+* `--data_dir`: directory containing IAM dataset
 
 If neither `--train` nor `--validate` is specified, the NN infers the text from the test image (`data/test.png`).
 Two examples: if you want to infer using beam search, execute `python main.py --beamsearch`, while you have to execute `python main.py --train --beamsearch` if you want to train the NN and do the validation using beam search.
