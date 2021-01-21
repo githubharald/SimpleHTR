@@ -7,7 +7,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-from DataLoader import Batch
+from DataLoaderIAM import Batch
 from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
 

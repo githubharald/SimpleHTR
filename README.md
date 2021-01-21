@@ -7,16 +7,15 @@
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
 This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
 As these word-images are smaller than images of complete text-lines, the NN can be kept small and training on the CPU is feasible.
-3/4 of the words from the validation-set are correctly recognized and the character error rate is around 10%.
+3/4 of the words from the validation-set are correctly recognized and the character error rate is around 11%.
 I will give some hints how to extend the model in case you need larger input-images (e.g. to recognize text-lines) or want better recognition accuracy.
 
 ![htr](./doc/htr.png)
 
 
 ## Run demo
-
-Go to the `model/` directory and unzip the file `model.zip` (pre-trained on the IAM dataset).
-Take care that the unzipped files are placed directly into the `model/` directory and not some subdirectory created by the unzip-program.
+[Download the model](https://www.dropbox.com/s/lod3gabgtuj0zzn/model.zip?dl=1) trained on the IAM dataset.
+Put the contents of the file `model.zip` into the `model` of the repository.
 Afterwards, go to the `src/` directory and run `python main.py`.
 The input image and the expected output is shown below.
 
@@ -34,23 +33,23 @@ Tested with:
 
 * Python 2  (commit <= 97c2512) and Python 3
 * TF 1.3, 1.10 and 1.12 (commit <= 97c2512)
-* TF 1.14, 1.15, 2.3.1 (commit >= ec00c1a)
-* Ubuntu 16.04, 18.04 and Windows 7, 10
+* TF 1.14, 1.15, 2.3.1, 2.4 (commit >= ec00c1a)
+* Ubuntu 16.04, 18.04, 20.04 and Windows 7, 10
 
 
 ## Command line arguments
 
-* `--train`: train the NN, details see below.
-* `--validate`: validate the NN, details see below.
+* `--train`: train the NN on 95% of the dataset samples and validate on the reaming 5%
+* `--validate`: validate the trained NN
 * `--beamsearch`: use vanilla beam search decoding (better, but slower) instead of best path decoding.
 * `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN.
 * `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump/` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder).
 * `--batch_size`: batch size
-* `--fast`: use lmdb to load images (faster than loading image files from disk)
-* `--data_dir`: directory containing IAM dataset
+* `--fast`: use LMDB to load images (faster than loading image files from disk)
+* `--data_dir`: directory containing IAM dataset (with subdirectories `img` and `gt`)
 
 If neither `--train` nor `--validate` is specified, the NN infers the text from the test image (`data/test.png`).
-Two examples: if you want to infer using beam search, execute `python main.py --beamsearch`, while you have to execute `python main.py --train --beamsearch` if you want to train the NN and do the validation using beam search.
+
 
 
 ## Integrate word beam search decoding
@@ -72,62 +71,37 @@ The dictionary is created (in training and validation mode) by using all words c
 Further, the (manually created) list of word-characters can be found in the file `model/wordCharList.txt`.
 Beam width is set to 50 to conform with the beam width of vanilla beam search decoding.
 
-Using this configuration, a character error rate of 8% and a word accuracy of 84% is achieved.
 
 ## Train model 
 
 ### IAM dataset
 
-The data-loader expects the IAM dataset \[5\] (or any other dataset that is compatible with it) in the `data/` directory.
-Follow these instructions to get the dataset:
+Follow these instructions to get the IAM dataset \[5\]:
 
-1. Register for free at this [website](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database).
-2. Download `words/words.tgz`.
-3. Download `ascii/words.txt`.
-4. Put `words.txt` into the `data/` directory.
-5. Create the directory `data/words/`.
-6. Put the content (directories `a01`, `a02`, ...) of `words.tgz` into `data/words/`.
-7. Go to `data/` and run `python checkDirs.py` for a rough check if everything is ok.
+* Register for free at this [website](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database)
+* Download `words/words.tgz`
+* Download `ascii/words.txt`
+* Create a directory for the dataset on your disk, and create two subdirectories: `img` and `gt`
+* Put `words.txt` into the `gt` directory
+* Put the content (directories `a01`, `a02`, ...) of `words.tgz` into the `img` directory
 
-If you want to train the model from scratch, delete the files contained in the `model/` directory.
-Otherwise, the parameters are loaded from the last model-snapshot before training begins.
-Then, go to the `src/` directory and execute `python main.py --train`.
-After each epoch of training, validation is done on a validation set (the dataset is split into 95% of the samples used for training and 5% for validation as defined in the class `DataLoader`).
-If you only want to do validation given a trained NN, execute `python main.py --validate`.
-Training on the CPU takes 18 hours on my system (VM, Ubuntu 16.04, 8GB of RAM and 4 cores running at 3.9GHz).
-The expected output is shown below.
+### Start the training
 
-```
-> python main.py --train
-Init with new values
-Epoch: 1
-Train NN
-Batch: 1 / 500 Loss: 130.354
-Batch: 2 / 500 Loss: 66.6619
-Batch: 3 / 500 Loss: 36.0154
-Batch: 4 / 500 Loss: 24.5898
-Batch: 5 / 500 Loss: 20.1845
-Batch: 6 / 500 Loss: 19.2857
-Batch: 7 / 500 Loss: 18.3493
-...
+* Delete files from `model` directory if you want to train from scratch
+* Go to the `src` directory and execute `python main.py --train --data_dir path/to/IAM`
+* Training stops after a fixed number of epochs without improvement
 
-Validate NN
-Batch: 1 / 115
-Ground truth -> Recognized
-[OK] "," -> ","
-[ERR:1] "Di" -> "D"
-[OK] "," -> ","
-[OK] """ -> """
-[OK] "he" -> "he"
-[OK] "told" -> "told"
-[ERR:2] "her" -> "nor"
-...
-Character error rate: 13.956289%. Word accuracy: 67.721739%.
-```
+### Fast image loading
+Loading and decoding the png image files from the disk is the bottleneck even when using only a small GPU.
+The database LMDB is used to speed up image loading:
+* Go to `src/` and run `createLMDB.py` with the IAM data directory specified
+* When training the model, add the command line option `--fast`
+
+Using the `--fast` option and a GTX 1050 TI training takes around 3h with a batch size of 500.
 
 ### Other datasets
 
-Either convert your dataset to the IAM format (look at `words.txt` and the corresponding directory structure) or change the class `DataLoader` according to your dataset format.
+Either convert your dataset to the IAM format (look at `words.txt` and the corresponding directory structure) or change the class `DataLoaderIAM` according to your dataset format.
 More information can be found in [this article](https://medium.com/@harald_scheidl/27648fb18519).
 
 
@@ -145,24 +119,10 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 * 5 CNN layers map the input image to a feature sequence of size 32x256
 * 2 LSTM layers with 256 units propagate information through the sequence and map the sequence to a matrix of size 32x80. Each matrix-element represents a score for one of the 80 characters at one of the 32 time-steps
 * The CTC layer either calculates the loss value given the matrix and the ground-truth text (when training), or it decodes the matrix to the final text with best path decoding or beam search decoding (when inferring)
-* Batch size is set to 50
+
 
 ![nn_overview](./doc/nn_overview.png)
 
-
-### Improve accuracy
-
-74% of the words from the IAM dataset are correctly recognized by the NN when using vanilla beam search decoding.
-If you need a better accuracy, here are some ideas how to improve it \[2\]:
-
-* Data augmentation: increase dataset-size by applying further (random) transformations to the input images. At the moment, only random distortions are performed.
-* Remove cursive writing style in the input images (see [DeslantImg](https://github.com/githubharald/DeslantImg)).
-* Increase input size (if input of NN is large enough, complete text-lines can be used, see [lamhoangtung/LineHTR](https://github.com/lamhoangtung/LineHTR)).
-* Add more CNN layers ([see discussion](https://github.com/githubharald/SimpleHTR/issues/38)).
-* Replace LSTM by 2D-LSTM.
-* Replace optimizer: Adam improves the accuracy, however, the number of training epochs increases ([see discussion](https://github.com/githubharald/SimpleHTR/issues/27)).
-* Decoder: use token passing or word beam search decoding \[4\] (see [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)) to constrain the output to dictionary words.
-* Text correction: if the recognized word is not contained in a dictionary, search for the most similar one.
 
 ### Analyze model
 
