@@ -15,8 +15,8 @@ I will give some hints how to extend the model in case you need larger input-ima
 
 ## Run demo
 [Download the model](https://www.dropbox.com/s/lod3gabgtuj0zzn/model.zip?dl=1) trained on the IAM dataset.
-Put the contents of the file `model.zip` into the `model` of the repository.
-Afterwards, go to the `src/` directory and run `python main.py`.
+Put the contents of the downloaded file `model.zip` into the `model` directory of the repository.
+Afterwards, go to the `src` directory and run `python main.py`.
 The input image and the expected output is shown below.
 
 ![test](./data/test.png)
@@ -43,7 +43,7 @@ Tested with:
 * `--validate`: validate the trained NN
 * `--beamsearch`: use vanilla beam search decoding (better, but slower) instead of best path decoding.
 * `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN.
-* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump/` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder).
+* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder).
 * `--batch_size`: batch size
 * `--fast`: use LMDB to load images (faster than loading image files from disk)
 * `--data_dir`: directory containing IAM dataset (with subdirectories `img` and `gt`)
@@ -64,7 +64,7 @@ Follow these instructions to integrate word beam search decoding:
 
 1. Clone repository [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch).
 2. Compile custom TF operation (follow instructions given in README).
-3. Copy binary `TFWordBeamSearch.so` from the CTCWordBeamSearch repository to the `src/` directory of the SimpleHTR repository.
+3. Copy binary `TFWordBeamSearch.so` from the CTCWordBeamSearch repository to the `src` directory of the SimpleHTR repository.
 
 Word beam search can now be enabled by setting the corresponding command line argument.
 The dictionary is created (in training and validation mode) by using all words contained in the IAM dataset (i.e. also including words from validation set) and is saved into the file `data/corpus.txt`.
@@ -94,7 +94,7 @@ Follow these instructions to get the IAM dataset \[5\]:
 ### Fast image loading
 Loading and decoding the png image files from the disk is the bottleneck even when using only a small GPU.
 The database LMDB is used to speed up image loading:
-* Go to `src/` and run `createLMDB.py` with the IAM data directory specified
+* Go to the `src` directory and run `createLMDB.py` with the IAM data directory specified
 * When training the model, add the command line option `--fast`
 
 Using the `--fast` option and a GTX 1050 TI training takes around 3h with a batch size of 500.
@@ -148,7 +148,7 @@ More information can be found in [this article](https://towardsdatascience.com/6
 
 ## FAQ
 
-1. I get the error message "Exception: No saved model found in: ... ": unzip the file `model/model.zip`. All files contained must be placed directly into the `model/` directory and **not** in some subdirectory created by the unzip-program.
+1. I get the error message "Exception: No saved model found in: ... ": unzip the file `model/model.zip`. All files contained must be placed directly into the `model` directory and **not** in some subdirectory created by the unzip-program.
 2. I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source.
 3. I get the error message "... ModuleNotFoundError: No module named 'editdistance'": you have to install the mentioned module by executing `pip install editdistance`.
 4. Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
