@@ -6,9 +6,7 @@
 
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
 This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
-As these word-images are smaller than images of complete text-lines, the NN can be kept small and training on the CPU is feasible.
 3/4 of the words from the validation-set are correctly recognized and the character error rate is around 11%.
-I will give some hints how to extend the model in case you need larger input-images (e.g. to recognize text-lines) or want better recognition accuracy.
 
 ![htr](./doc/htr.png)
 
@@ -39,11 +37,11 @@ Tested with:
 
 ## Command line arguments
 
-* `--train`: train the NN on 95% of the dataset samples and validate on the reaming 5%
+* `--train`: train the NN on 95% of the dataset samples and validate on the remaining 5%
 * `--validate`: validate the trained NN
-* `--beamsearch`: use vanilla beam search decoding (better, but slower) instead of best path decoding.
-* `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN.
-* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder).
+* `--beamsearch`: use vanilla beam search decoding (better, but slower) instead of best path decoding
+* `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN
+* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder)
 * `--batch_size`: batch size
 * `--fast`: use LMDB to load images (faster than loading image files from disk)
 * `--data_dir`: directory containing IAM dataset (with subdirectories `img` and `gt`)
@@ -54,17 +52,17 @@ If neither `--train` nor `--validate` is specified, the NN infers the text from 
 
 ## Integrate word beam search decoding
 
-Besides the two decoders shipped with TF, it is possible to use word beam search decoding \[4\].
-Using this decoder, words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) can still be recognized.
+It is possible to use the word beam search decoder \[4\] instead of the two decoders shipped with TF.
+Words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) can still be recognized.
 The following illustration shows a sample for which word beam search is able to recognize the correct text, while the other decoders fail.
 
 ![decoder_comparison](./doc/decoder_comparison.png)
 
 Follow these instructions to integrate word beam search decoding:
 
-1. Clone repository [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch).
-2. Compile custom TF operation (follow instructions given in README).
-3. Copy binary `TFWordBeamSearch.so` from the CTCWordBeamSearch repository to the `src` directory of the SimpleHTR repository.
+1. Clone repository [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)
+2. Compile custom TF operation (follow instructions given in README)
+3. Copy binary `TFWordBeamSearch.so` from the CTCWordBeamSearch repository to the `src` directory of the SimpleHTR repository
 
 Word beam search can now be enabled by setting the corresponding command line argument.
 The dictionary is created (in training and validation mode) by using all words contained in the IAM dataset (i.e. also including words from validation set) and is saved into the file `data/corpus.txt`.
@@ -94,10 +92,11 @@ Follow these instructions to get the IAM dataset \[5\]:
 ### Fast image loading
 Loading and decoding the png image files from the disk is the bottleneck even when using only a small GPU.
 The database LMDB is used to speed up image loading:
-* Go to the `src` directory and run `createLMDB.py` with the IAM data directory specified
+* Go to the `src` directory and run `createLMDB.py --data_dir path/to/IAM` with the IAM data directory specified
+* A subfolder `lmdb` is created in the IAM data directory containing the LMDB files
 * When training the model, add the command line option `--fast`
 
-Using the `--fast` option and a GTX 1050 TI training takes around 3h with a batch size of 500.
+Using the `--fast` option and a GTX 1050 Ti training takes around 3h with a batch size of 500.
 
 ### Other datasets
 
@@ -111,7 +110,6 @@ More information can be found in [this article](https://medium.com/@harald_schei
 
 The model \[1\] is a stripped-down version of the HTR system I implemented for my thesis \[2\]\[3\].
 What remains is what I think is the bare minimum to recognize text with an acceptable accuracy.
-The implementation only depends on numpy, cv2 and tensorflow imports.
 It consists of 5 CNN layers, 2 RNN (LSTM) layers and the CTC loss and decoding layer.
 The illustration below gives an overview of the NN (green: operations, pink: data flowing through NN) and here follows a short description:
 
@@ -128,27 +126,19 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 Run `python analyze.py` with the following arguments to analyze the image file `data/analyze.png` with the ground-truth text "are":
 
-* `--relevance`: compute the pixel relevance for the correct prediction.
-* `--invariance`: check if the model is invariant to horizontal translations of the text.
-* No argument provided: show the results.
+* `--relevance`: compute the pixel relevance for the correct prediction
+* `--invariance`: check if the model is invariant to horizontal translations of the text
+* No argument provided: show the results
 
 Results are shown in the plots below.
-The pixel relevance (left) shows how a pixel influences the score for the correct class.
-Red pixels vote for the correct class, while blue pixels vote against the correct class.
-It can be seen that the white space above vertical lines in images is important for the classifier to decide against the "i" character with its superscript dot.
-Draw a dot above the "a" (red region in plot) and you will get "aive" instead of "are".
-
-The second plot (right) shows how the probability of the ground-truth text changes when the text is shifted to the right.
-As can be seen, the model is not translation invariant, as all training images from IAM are left-aligned.
-Adding data augmentation which uses random text-alignments can improve the translation invariance of the model.
-More information can be found in [this article](https://towardsdatascience.com/6c04864b8a98).
+For more information see [this article](https://towardsdatascience.com/6c04864b8a98).
 
 ![analyze](./doc/analyze.png)
 
 
 ## FAQ
 
-1. I get the error message "Exception: No saved model found in: ... ": unzip the file `model/model.zip`. All files contained must be placed directly into the `model` directory and **not** in some subdirectory created by the unzip-program.
+1. I get the error message "Exception: No saved model found in: ... ": unzip the file `model.zip`. All files contained must be placed directly into the `model` directory and **not** in some subdirectory created by the unzip-program.
 2. I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source.
 3. I get the error message "... ModuleNotFoundError: No module named 'editdistance'": you have to install the mentioned module by executing `pip install editdistance`.
 4. Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.

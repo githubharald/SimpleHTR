@@ -2,11 +2,11 @@ import argparse
 
 import cv2
 import editdistance
+from path import Path
 
 from DataLoaderIAM import DataLoaderIAM, Batch
 from Model import Model, DecoderType
 from SamplePreprocessor import preprocess
-from path import Path
 
 
 class FilePaths:
