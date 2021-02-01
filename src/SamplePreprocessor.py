@@ -75,7 +75,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     img = cv2.imread('../data/test.png', cv2.IMREAD_GRAYSCALE)
-    img_aug = preprocess(img, (128, 32), False)
+    img_aug = preprocess(img, (128, 32), True)
     plt.subplot(121)
     plt.imshow(img, cmap='gray')
     plt.subplot(122)
