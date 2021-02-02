@@ -78,9 +78,6 @@ class DataLoaderIAM:
         self.trainWords = [x.gtText for x in self.trainSamples]
         self.validationWords = [x.gtText for x in self.validationSamples]
 
-        # number of randomly chosen samples per epoch for training
-        self.numTrainSamplesPerEpoch = 25000
-
         # start with train set
         self.trainSet()
 
@@ -106,7 +103,7 @@ class DataLoaderIAM:
         self.dataAugmentation = True
         self.currIdx = 0
         random.shuffle(self.trainSamples)
-        self.samples = self.trainSamples[:self.numTrainSamplesPerEpoch]
+        self.samples = self.trainSamples
         self.currSet = 'train'
 
     def validationSet(self):

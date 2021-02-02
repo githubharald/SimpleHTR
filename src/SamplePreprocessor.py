@@ -25,7 +25,7 @@ def preprocess(img, imgSize, dataAugmentation=False):
         if random.random() < 0.5:
             img = img * (0.25 + random.random() * 0.75)
         if random.random() < 0.25:
-            img = np.clip(img + (np.random.random(img.shape) - 0.5) * random.randint(1, 25), 0, 255)
+            img = np.clip(img + (np.random.random(img.shape) - 0.5) * random.randint(1, 50), 0, 255)
         if random.random() < 0.1:
             img = 255 - img
 
@@ -33,20 +33,20 @@ def preprocess(img, imgSize, dataAugmentation=False):
         wt, ht = imgSize
         h, w = img.shape
         f = min(wt / w, ht / h)
-        fx = f * np.random.uniform(0.5, 1.5)
-        fy = f * np.random.uniform(0.5, 1.5)
+        fx = f * np.random.uniform(0.75, 1.25)
+        fy = f * np.random.uniform(0.75, 1.25)
 
         # random position around center
         txc = (wt - w * fx) / 2
         tyc = (ht - h * fy) / 2
-        freedom_x = max((wt - fx * w) / 2, 0)
-        freedom_y = max((ht - fy * h) / 2, 0)
+        freedom_x = max((wt - fx * w) / 2, 0) + wt / 10
+        freedom_y = max((ht - fy * h) / 2, 0) + ht / 10
         tx = txc + np.random.uniform(-freedom_x, freedom_x)
         ty = tyc + np.random.uniform(-freedom_y, freedom_y)
 
         # map image into target image
         M = np.float32([[fx, 0, tx], [0, fy, ty]])
-        target = np.ones(imgSize[::-1]) * np.random.uniform(0, 255)
+        target = np.ones(imgSize[::-1]) * 255 / 2
         img = cv2.warpAffine(img, M, dsize=imgSize, dst=target, borderMode=cv2.BORDER_TRANSPARENT)
 
     # no data augmentation
