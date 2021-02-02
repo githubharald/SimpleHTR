@@ -23,7 +23,7 @@ def preprocess(img, imgSize, dataAugmentation=False):
         if random.random() < 0.25:
             img = cv2.erode(img, np.ones((3, 3)))
         if random.random() < 0.5:
-            img = img * (0.1 + random.random() * 0.9)
+            img = img * (0.25 + random.random() * 0.75)
         if random.random() < 0.25:
             img = np.clip(img + (np.random.random(img.shape) - 0.5) * random.randint(1, 25), 0, 255)
         if random.random() < 0.1:
@@ -33,14 +33,14 @@ def preprocess(img, imgSize, dataAugmentation=False):
         wt, ht = imgSize
         h, w = img.shape
         f = min(wt / w, ht / h)
-        fx = f * np.random.uniform(0.75, 1.5)
-        fy = f * np.random.uniform(0.75, 1.5)
+        fx = f * np.random.uniform(0.5, 1.5)
+        fy = f * np.random.uniform(0.5, 1.5)
 
         # random position around center
         txc = (wt - w * fx) / 2
         tyc = (ht - h * fy) / 2
-        freedom_x = wt / 5
-        freedom_y = ht / 5
+        freedom_x = max((wt - fx * w) / 2, 0)
+        freedom_y = max((ht - fy * h) / 2, 0)
         tx = txc + np.random.uniform(-freedom_x, freedom_x)
         ty = tyc + np.random.uniform(-freedom_y, freedom_y)
 
