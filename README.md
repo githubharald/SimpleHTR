@@ -21,7 +21,6 @@ The input image and the expected output is shown below.
 
 ```
 > python main.py
-Validation character error rate of saved model: 11.118344571029994%
 Init with stored values from ../model/snapshot-76
 Recognized: "Hello"
 Probability: 0.8462573289871216

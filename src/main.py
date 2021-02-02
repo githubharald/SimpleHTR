@@ -1,4 +1,5 @@
 import argparse
+import json
 
 import cv2
 import editdistance
@@ -12,14 +13,20 @@ from SamplePreprocessor import preprocess
 class FilePaths:
     "filenames and paths to data"
     fnCharList = '../model/charList.txt'
-    fnAccuracy = '../model/accuracy.txt'
+    fnSummary = '../model/summary.json'
     fnInfer = '../data/test.png'
     fnCorpus = '../data/corpus.txt'
+
+
+def write_summary(charErrorRates):
+    with open(FilePaths.fnSummary, 'w') as f:
+        json.dump(charErrorRates, f)
 
 
 def train(model, loader):
     "train NN"
     epoch = 0  # number of training epochs since start
+    summaryCharErrorRates = []
     bestCharErrorRate = float('inf')  # best valdiation character error rate
     noImprovementSince = 0  # number of epochs no improvement of character error rate occured
     earlyStopping = 25  # stop training after this number of epochs without improvement
@@ -39,14 +46,16 @@ def train(model, loader):
         # validate
         charErrorRate = validate(model, loader)
 
+        # write summary
+        summaryCharErrorRates.append(charErrorRate)
+        write_summary(summaryCharErrorRates)
+
         # if best validation accuracy so far, save model parameters
         if charErrorRate < bestCharErrorRate:
             print('Character error rate improved, save model')
             bestCharErrorRate = charErrorRate
             noImprovementSince = 0
             model.save()
-            open(FilePaths.fnAccuracy, 'w').write(
-                f'Validation character error rate of saved model: {charErrorRate * 100.0}%')
         else:
             print(f'Character error rate not improved, best so far: {charErrorRate * 100.0}%')
             noImprovementSince += 1
@@ -140,7 +149,6 @@ def main():
 
     # infer text on test image
     else:
-        print(open(FilePaths.fnAccuracy).read())
         model = Model(open(FilePaths.fnCharList).read(), decoderType, mustRestore=True, dump=args.dump)
         infer(model, FilePaths.fnInfer)
 
