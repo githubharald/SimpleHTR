@@ -110,24 +110,23 @@ def infer(model, fnImg):
 
 def main():
     "main function"
-    # optional command line args
     parser = argparse.ArgumentParser()
     parser.add_argument('--train', help='train the NN', action='store_true')
     parser.add_argument('--validate', help='validate the NN', action='store_true')
-    parser.add_argument('--beamsearch', help='use beam search instead of best path decoding', action='store_true')
-    parser.add_argument('--wordbeamsearch', help='use word beam search instead of best path decoding',
-                        action='store_true')
-    parser.add_argument('--dump', help='dump output of NN to CSV file(s)', action='store_true')
-    parser.add_argument('--fast', help='use lmdb to load images', action='store_true')
-    parser.add_argument('--data_dir', help='directory containing IAM dataset', type=Path, required=False)
+    parser.add_argument('--decoder', choices=['bestpath', 'beamsearch', 'wordbeamsearch'], default='bestpath',
+                        help='CTC decoder')
     parser.add_argument('--batch_size', help='batch size', type=int, default=100)
-
+    parser.add_argument('--data_dir', help='directory containing IAM dataset', type=Path, required=False)
+    parser.add_argument('--fast', help='use lmdb to load images', action='store_true')
+    parser.add_argument('--dump', help='dump output of NN to CSV file(s)', action='store_true')
     args = parser.parse_args()
 
-    decoderType = DecoderType.BestPath
-    if args.beamsearch:
+    # set chosen CTC decoder
+    if args.decoder == 'bestpath':
+        decoderType = DecoderType.BestPath
+    elif args.decoder == 'beamsearch':
         decoderType = DecoderType.BeamSearch
-    elif args.wordbeamsearch:
+    elif args.decoder == 'wordbeamsearch':
         decoderType = DecoderType.WordBeamSearch
 
     # train or validate on IAM dataset

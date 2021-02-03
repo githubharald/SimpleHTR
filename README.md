@@ -6,7 +6,7 @@
 
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
 This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
-3/4 of the words from the validation-set are correctly recognized and the character error rate is around 11%.
+3/4 of the words from the validation-set are correctly recognized, and the character error rate is around 10%.
 
 ![htr](./doc/htr.png)
 
@@ -21,32 +21,22 @@ The input image and the expected output is shown below.
 
 ```
 > python main.py
-Init with stored values from ../model/snapshot-76
+Init with stored values from ../model/snapshot-39
 Recognized: "Hello"
-Probability: 0.8462573289871216
+Probability: 0.42098119854927063
 ```
-
-Tested with:
-
-* Python 2  (commit <= 97c2512) and Python 3
-* TF 1.3, 1.10 and 1.12 (commit <= 97c2512)
-* TF 1.14, 1.15, 2.3.1, 2.4 (commit >= ec00c1a)
-* Ubuntu 16.04, 18.04, 20.04 and Windows 7, 10
 
 
 ## Command line arguments
-
 * `--train`: train the NN on 95% of the dataset samples and validate on the remaining 5%
 * `--validate`: validate the trained NN
-* `--beamsearch`: use vanilla beam search decoding (better, but slower) instead of best path decoding
-* `--wordbeamsearch`: use word beam search decoding (only outputs words contained in a dictionary) instead of best path decoding. This is a custom TF operation and must be compiled from source, more information see corresponding section below. It should **not** be used when training the NN
-* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder)
+* `--decoder`: select from CTC decoders "bestpath", "beamsearch", and "wordbeamsearch". Defaults to "bestpath". For option "wordbeamsearch" see details below
 * `--batch_size`: batch size
-* `--fast`: use LMDB to load images (faster than loading image files from disk)
 * `--data_dir`: directory containing IAM dataset (with subdirectories `img` and `gt`)
+* `--fast`: use LMDB to load images (faster than loading image files from disk)
+* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder)
 
 If neither `--train` nor `--validate` is specified, the NN infers the text from the test image (`data/test.png`).
-
 
 
 ## Integrate word beam search decoding
@@ -69,9 +59,7 @@ Further, the (manually created) list of word-characters can be found in the file
 Beam width is set to 50 to conform with the beam width of vanilla beam search decoding.
 
 
-## Train model 
-
-### IAM dataset
+## Train model with IAM dataset
 
 Follow these instructions to get the IAM dataset \[5\]:
 
@@ -97,16 +85,9 @@ The database LMDB is used to speed up image loading:
 
 Using the `--fast` option and a GTX 1050 Ti training takes around 3h with a batch size of 500.
 
-### Other datasets
-
-Either convert your dataset to the IAM format (look at `words.txt` and the corresponding directory structure) or change the class `DataLoaderIAM` according to your dataset format.
-More information can be found in [this article](https://medium.com/@harald_scheidl/27648fb18519).
-
-
 ## Information about model
 
 ### Overview
-
 The model \[1\] is a stripped-down version of the HTR system I implemented for my thesis \[2\]\[3\].
 What remains is what I think is the bare minimum to recognize text with an acceptable accuracy.
 It consists of 5 CNN layers, 2 RNN (LSTM) layers and the CTC loss and decoding layer.
@@ -122,7 +103,6 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 
 ### Analyze model
-
 Run `python analyze.py` with the following arguments to analyze the image file `data/analyze.png` with the ground-truth text "are":
 
 * `--relevance`: compute the pixel relevance for the correct prediction
@@ -136,20 +116,13 @@ For more information see [this article](https://towardsdatascience.com/6c04864b8
 
 
 ## FAQ
-
-1. I get the error message "Exception: No saved model found in: ... ": unzip the file `model.zip`. All files contained must be placed directly into the `model` directory and **not** in some subdirectory created by the unzip-program.
-2. I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source.
-3. I get the error message "... ModuleNotFoundError: No module named 'editdistance'": you have to install the mentioned module by executing `pip install editdistance`.
-4. Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` of the IAM website.
-5. I want to recognize text of line (or sentence) images: this is not possible with the provided model. The size of the input image is too small. For more information read [this article](https://medium.com/@harald_scheidl/27648fb18519) or have a look at the [lamhoangtung/LineHTR](https://github.com/lamhoangtung/LineHTR) repository.
-6. I need a confidence score for the recognized text: after recognizing the text, you can calculate the loss value for the NN output and the recognized text. The loss simply is the negative logarithm of the score. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
-7. I use a custom image of handwritten text, but the NN outputs a wrong result: the NN is trained on the IAM dataset. The NN not only learns to recognize text, but it also learns properties of the dataset-images. Some obvious properties of the IAM dataset are: text is tightly cropped, contrast is very high, most of the characters are lower-case. Either you preprocess your image to look like an IAM image, or you train the NN on your own dataset. See [this article](https://medium.com/@harald_scheidl/27648fb18519).
-8. I get an error when running the script more than once from an interactive Python session: do **not** call function `main()` in file `main.py` from an interactive session, as the TF computation graph is created multiple times when calling `main()` multiple times. Run the script by executing `python main.py` instead.
-9. How to get support for this repository: I do not provide any support for this repository (also not via mail).
+* I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source
+* Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` on the IAM website
+* I want to recognize text of line (or sentence) images: this is not possible with the provided model. The size of the input image is too small. For more information read [this article](https://medium.com/@harald_scheidl/27648fb18519) or have a look at the [lamhoangtung/LineHTR](https://github.com/lamhoangtung/LineHTR) repository
+* I get an error when running the script more than once from an interactive Python session: do **not** call function `main()` in file `main.py` from an interactive session, as the TF computation graph is created multiple times when calling `main()` multiple times. Run the script by executing `python main.py` instead
 
 
 ## References
-
 \[1\] [Build a Handwritten Text Recognition System using TensorFlow](https://towardsdatascience.com/2326a3487cd5)
 
 \[2\] [Scheidl - Handwritten Text Recognition in Historical Documents](https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742)
