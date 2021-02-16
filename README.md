@@ -41,7 +41,7 @@ If neither `--train` nor `--validate` is specified, the NN infers the text from 
 
 ## Integrate word beam search decoding
 
-It is possible to use the word beam search decoder \[4\] instead of the two decoders shipped with TF.
+It is possible to use the [word beam search decoder](https://repositum.tuwien.ac.at/obvutwoa/download/pdf/2774578) instead of the two decoders shipped with TF.
 Words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) can still be recognized.
 The following illustration shows a sample for which word beam search is able to recognize the correct text, while the other decoders fail.
 
@@ -61,7 +61,7 @@ Beam width is set to 50 to conform with the beam width of vanilla beam search de
 
 ## Train model with IAM dataset
 
-Follow these instructions to get the IAM dataset \[5\]:
+Follow these instructions to get the IAM dataset:
 
 * Register for free at this [website](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database)
 * Download `words/words.tgz`
@@ -88,7 +88,7 @@ Using the `--fast` option and a GTX 1050 Ti training takes around 3h with a batc
 ## Information about model
 
 ### Overview
-The model \[1\] is a stripped-down version of the HTR system I implemented for my thesis \[2\]\[3\].
+The model is a stripped-down version of the HTR system I implemented for [my thesis]((https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742)).
 What remains is what I think is the bare minimum to recognize text with an acceptable accuracy.
 It consists of 5 CNN layers, 2 RNN (LSTM) layers and the CTC loss and decoding layer.
 The illustration below gives an overview of the NN (green: operations, pink: data flowing through NN) and here follows a short description:
@@ -102,33 +102,15 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 ![nn_overview](./doc/nn_overview.png)
 
 
-### Analyze model
-Run `python analyze.py` with the following arguments to analyze the image file `data/analyze.png` with the ground-truth text "are":
-
-* `--relevance`: compute the pixel relevance for the correct prediction
-* `--invariance`: check if the model is invariant to horizontal translations of the text
-* No argument provided: show the results
-
-Results are shown in the plots below.
-For more information see [this article](https://towardsdatascience.com/6c04864b8a98).
-
-![analyze](./doc/analyze.png)
-
-
 ## FAQ
 * I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source
 * Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` on the IAM website
-* I want to recognize text of line (or sentence) images: this is not possible with the provided model. The size of the input image is too small. For more information read [this article](https://medium.com/@harald_scheidl/27648fb18519) or have a look at the [lamhoangtung/LineHTR](https://github.com/lamhoangtung/LineHTR) repository
+* I want to recognize the text contained in a text-line: the model is too small for this, you have to first segment the line into words, e.g. using the model from the [WordDetectorNN](https://github.com/githubharald/WordDetectorNN) repository
 * I get an error when running the script more than once from an interactive Python session: do **not** call function `main()` in file `main.py` from an interactive session, as the TF computation graph is created multiple times when calling `main()` multiple times. Run the script by executing `python main.py` instead
 
 
 ## References
-\[1\] [Build a Handwritten Text Recognition System using TensorFlow](https://towardsdatascience.com/2326a3487cd5)
+* [Build a Handwritten Text Recognition System using TensorFlow](https://towardsdatascience.com/2326a3487cd5)
+* [Scheidl - Handwritten Text Recognition in Historical Documents](https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742)
+* [Scheidl - Word Beam Search: A Connectionist Temporal Classification Decoding Algorithm](https://repositum.tuwien.ac.at/obvutwoa/download/pdf/2774578)
 
-\[2\] [Scheidl - Handwritten Text Recognition in Historical Documents](https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742)
-
-\[3\] [Shi - An End-to-End Trainable Neural Network for Image-based Sequence Recognition and Its Application to Scene Text Recognition](https://arxiv.org/pdf/1507.05717.pdf)
-
-\[4\] [Scheidl - Word Beam Search: A Connectionist Temporal Classification Decoding Algorithm](https://repositum.tuwien.ac.at/obvutwoa/download/pdf/2774578)
-
-\[5\] [Marti - The IAM-database: an English sentence database for offline handwriting recognition](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database)
