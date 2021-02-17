@@ -118,25 +118,26 @@ class Model:
         self.lossPerElement = tf.compat.v1.nn.ctc_loss(labels=self.gtTexts, inputs=self.savedCtcInput,
                                                        sequence_length=self.seqLen, ctc_merge_repeated=True)
 
-        # decoder: either best path decoding or beam search decoding
+        # best path decoding or beam search decoding
         if self.decoderType == DecoderType.BestPath:
             self.decoder = tf.nn.ctc_greedy_decoder(inputs=self.ctcIn3dTBC, sequence_length=self.seqLen)
         elif self.decoderType == DecoderType.BeamSearch:
             self.decoder = tf.nn.ctc_beam_search_decoder(inputs=self.ctcIn3dTBC, sequence_length=self.seqLen,
                                                          beam_width=50)
+        # word beam search decoding (see https://github.com/githubharald/CTCWordBeamSearch)
         elif self.decoderType == DecoderType.WordBeamSearch:
-            # import compiled word beam search operation (see https://github.com/githubharald/CTCWordBeamSearch)
-            word_beam_search_module = tf.load_op_library('TFWordBeamSearch.so')
-
             # prepare information about language (dictionary, characters in dataset, characters forming words)
             chars = str().join(self.charList)
             wordChars = open('../model/wordCharList.txt').read().splitlines()[0]
             corpus = open('../data/corpus.txt').read()
 
             # decode using the "Words" mode of word beam search
-            self.decoder = word_beam_search_module.word_beam_search(tf.nn.softmax(self.ctcIn3dTBC, axis=2), 50, 'Words',
-                                                                    0.0, corpus.encode('utf8'), chars.encode('utf8'),
-                                                                    wordChars.encode('utf8'))
+            from word_beam_search import WordBeamSearch
+            self.decoder = WordBeamSearch(50, 'Words', 0.0, corpus.encode('utf8'), chars.encode('utf8'),
+                                          wordChars.encode('utf8'))
+
+            # the input to the decoder must have softmax already applied
+            self.wbsInput = tf.nn.softmax(self.ctcIn3dTBC, axis=2)
 
     def setupTF(self):
         "initialize TF"
@@ -186,39 +187,34 @@ class Model:
     def decoderOutputToText(self, ctcOutput, batchSize):
         "extract texts from output of CTC decoder"
 
-        # contains string of labels for each batch element
-        encodedLabelStrs = [[] for i in range(batchSize)]
-
-        # word beam search: label strings terminated by blank
+        # word beam search: already contains label strings
         if self.decoderType == DecoderType.WordBeamSearch:
-            blank = len(self.charList)
-            for b in range(batchSize):
-                for label in ctcOutput[b]:
-                    if label == blank:
-                        break
-                    encodedLabelStrs[b].append(label)
+            labelStrs = ctcOutput
 
         # TF decoders: label strings are contained in sparse tensor
         else:
             # ctc returns tuple, first element is SparseTensor
             decoded = ctcOutput[0][0]
 
+            # contains string of labels for each batch element
+            labelStrs = [[] for _ in range(batchSize)]
+
             # go over all indices and save mapping: batch -> values
-            idxDict = {b: [] for b in range(batchSize)}
             for (idx, idx2d) in enumerate(decoded.indices):
                 label = decoded.values[idx]
                 batchElement = idx2d[0]  # index according to [b,t]
-                encodedLabelStrs[batchElement].append(label)
+                labelStrs[batchElement].append(label)
 
         # map labels to chars for all batch elements
-        return [str().join([self.charList[c] for c in labelStr]) for labelStr in encodedLabelStrs]
+        return [str().join([self.charList[c] for c in labelStr]) for labelStr in labelStrs]
 
     def trainBatch(self, batch):
         "feed a batch into the NN to train it"
         numBatchElements = len(batch.imgs)
         sparse = self.toSparse(batch.gtTexts)
         evalList = [self.optimizer, self.loss]
-        feedDict = {self.inputImgs: batch.imgs, self.gtTexts: sparse, self.seqLen: [Model.maxTextLen] * numBatchElements, self.is_train: True}
+        feedDict = {self.inputImgs: batch.imgs, self.gtTexts: sparse,
+                    self.seqLen: [Model.maxTextLen] * numBatchElements, self.is_train: True}
         _, lossVal = self.sess.run(evalList, feedDict)
         self.batchesTrained += 1
         return lossVal
@@ -247,12 +243,33 @@ class Model:
 
         # decode, optionally save RNN output
         numBatchElements = len(batch.imgs)
-        evalRnnOutput = self.dump or calcProbability
-        evalList = [self.decoder] + ([self.ctcIn3dTBC] if evalRnnOutput else [])
+
+        # put tensors to be evaluated into list
+        evalList = []
+
+        if self.decoderType == DecoderType.WordBeamSearch:
+            evalList.append(self.wbsInput)
+        else:
+            evalList.append(self.decoder)
+
+        if self.dump or calcProbability:
+            evalList.append(self.ctcIn3dTBC)
+
+        # dict containing all tensor fed into the model
         feedDict = {self.inputImgs: batch.imgs, self.seqLen: [Model.maxTextLen] * numBatchElements,
                     self.is_train: False}
+
+        # evaluate model
         evalRes = self.sess.run(evalList, feedDict)
-        decoded = evalRes[0]
+
+        # TF decoders: decoding already done in TF graph
+        if self.decoderType != DecoderType.WordBeamSearch:
+            decoded = evalRes[0]
+        # word beam search decoder: decoding is done in C++ function compute()
+        else:
+            decoded = self.decoder.compute(evalRes[0])
+
+        # map labels (numbers) to character string
         texts = self.decoderOutputToText(decoded, numBatchElements)
 
         # feed RNN output and recognized text into CTC loss to compute labeling probability
@@ -270,7 +287,7 @@ class Model:
         if self.dump:
             self.dumpNNOutput(evalRes[1])
 
-        return (texts, probs)
+        return texts, probs
 
     def save(self):
         "save model to file"

@@ -1,6 +1,6 @@
 # Handwritten Text Recognition with TensorFlow
 
-* **Update 2021: more robust model, faster dataloader, Python3 only**
+* **Update 2021: more robust model, faster dataloader, word beam search decoder also available for Windows**
 * **Update 2020: code is compatible with TF2**
 
 
@@ -41,7 +41,7 @@ If neither `--train` nor `--validate` is specified, the NN infers the text from 
 
 ## Integrate word beam search decoding
 
-It is possible to use the [word beam search decoder](https://repositum.tuwien.ac.at/obvutwoa/download/pdf/2774578) instead of the two decoders shipped with TF.
+The [word beam search decoder](https://repositum.tuwien.ac.at/obvutwoa/download/pdf/2774578) can be used instead of the two decoders shipped with TF.
 Words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) can still be recognized.
 The following illustration shows a sample for which word beam search is able to recognize the correct text, while the other decoders fail.
 
@@ -50,12 +50,11 @@ The following illustration shows a sample for which word beam search is able to 
 Follow these instructions to integrate word beam search decoding:
 
 1. Clone repository [CTCWordBeamSearch](https://github.com/githubharald/CTCWordBeamSearch)
-2. Compile custom TF operation (follow instructions given in README)
-3. Copy binary `TFWordBeamSearch.so` from the CTCWordBeamSearch repository to the `src` directory of the SimpleHTR repository
+2. Compile and install by running `pip install .` at the root level of the CTCWordBeamSearch repository
+3. Specify the command line option `--decoder wordbeamsearch` when executing `main.py` to actually use the decoder
 
-Word beam search can now be enabled by setting the corresponding command line argument.
-The dictionary is created (in training and validation mode) by using all words contained in the IAM dataset (i.e. also including words from validation set) and is saved into the file `data/corpus.txt`.
-Further, the (manually created) list of word-characters can be found in the file `model/wordCharList.txt`.
+The dictionary is automatically created in training and validation mode by using all words contained in the IAM dataset (i.e. also including words from validation set) and is saved into the file `data/corpus.txt`.
+Further, the manually created list of word-characters can be found in the file `model/wordCharList.txt`.
 Beam width is set to 50 to conform with the beam width of vanilla beam search decoding.
 
 
@@ -83,11 +82,12 @@ The database LMDB is used to speed up image loading:
 * A subfolder `lmdb` is created in the IAM data directory containing the LMDB files
 * When training the model, add the command line option `--fast`
 
+The dataset should be located on an SSD drive.
 Using the `--fast` option and a GTX 1050 Ti training takes around 3h with a batch size of 500.
+
 
 ## Information about model
 
-### Overview
 The model is a stripped-down version of the HTR system I implemented for [my thesis]((https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742)).
 What remains is what I think is the bare minimum to recognize text with an acceptable accuracy.
 It consists of 5 CNN layers, 2 RNN (LSTM) layers and the CTC loss and decoding layer.
@@ -103,7 +103,6 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 
 
 ## FAQ
-* I get the error message "... TFWordBeamSearch.so: cannot open shared object file: No such file or directory": if you want to use word beam search decoding, you have to compile the custom TF operation from source
 * Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` on the IAM website
 * I want to recognize the text contained in a text-line: the model is too small for this, you have to first segment the line into words, e.g. using the model from the [WordDetectorNN](https://github.com/githubharald/WordDetectorNN) repository
 * I get an error when running the script more than once from an interactive Python session: do **not** call function `main()` in file `main.py` from an interactive session, as the TF computation graph is created multiple times when calling `main()` multiple times. Run the script by executing `python main.py` instead
