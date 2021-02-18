@@ -98,14 +98,7 @@ The illustration below gives an overview of the NN (green: operations, pink: dat
 * 2 LSTM layers with 256 units propagate information through the sequence and map the sequence to a matrix of size 32x80. Each matrix-element represents a score for one of the 80 characters at one of the 32 time-steps
 * The CTC layer either calculates the loss value given the matrix and the ground-truth text (when training), or it decodes the matrix to the final text with best path decoding or beam search decoding (when inferring)
 
-
 ![nn_overview](./doc/nn_overview.png)
-
-
-## FAQ
-* Where can I find the file `words.txt` of the IAM dataset: it is located in the subfolder `ascii` on the IAM website
-* I want to recognize the text contained in a text-line: the model is too small for this, you have to first segment the line into words, e.g. using the model from the [WordDetectorNN](https://github.com/githubharald/WordDetectorNN) repository
-* I get an error when running the script more than once from an interactive Python session: do **not** call function `main()` in file `main.py` from an interactive session, as the TF computation graph is created multiple times when calling `main()` multiple times. Run the script by executing `python main.py` instead
 
 
 ## References
