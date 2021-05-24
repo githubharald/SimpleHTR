@@ -18,10 +18,6 @@ class DecoderType:
 class Model:
     """Minimalistic TF model for HTR."""
 
-    # model constants
-    img_size = (128, 32)
-    max_text_len = 32
-
     def __init__(self, char_list, decoder_type=DecoderType.BestPath, must_restore=False, dump=False):
         """Init model: add CNN, RNN and CTC and initialize TF."""
         self.dump = dump
@@ -34,7 +30,7 @@ class Model:
         self.is_train = tf.compat.v1.placeholder(tf.bool, name='is_train')
 
         # input image batch
-        self.input_imgs = tf.compat.v1.placeholder(tf.float32, shape=(None, None, Model.img_size[1]))
+        self.input_imgs = tf.compat.v1.placeholder(tf.float32, shape=(None, None, None))
 
         # setup CNN, RNN and CTC
         self.setup_cnn()
@@ -57,7 +53,7 @@ class Model:
         # list of parameters for the layers
         kernel_vals = [5, 5, 3, 3, 3]
         feature_vals = [1, 32, 64, 128, 128, 256]
-        stride_vals = poolVals = [(2, 2), (2, 2), (1, 2), (1, 2), (1, 2)]
+        stride_vals = pool_vals = [(2, 2), (2, 2), (1, 2), (1, 2), (1, 2)]
         num_layers = len(stride_vals)
 
         # create layers
@@ -69,7 +65,7 @@ class Model:
             conv = tf.nn.conv2d(input=pool, filters=kernel, padding='SAME', strides=(1, 1, 1, 1))
             conv_norm = tf.compat.v1.layers.batch_normalization(conv, training=self.is_train)
             relu = tf.nn.relu(conv_norm)
-            pool = tf.nn.max_pool2d(input=relu, ksize=(1, poolVals[i][0], poolVals[i][1], 1),
+            pool = tf.nn.max_pool2d(input=relu, ksize=(1, pool_vals[i][0], pool_vals[i][1], 1),
                                     strides=(1, stride_vals[i][0], stride_vals[i][1], 1), padding='VALID')
 
         self.cnn_out_4d = pool
@@ -214,10 +210,11 @@ class Model:
     def train_batch(self, batch):
         """Feed a batch into the NN to train it."""
         num_batch_elements = len(batch.imgs)
+        max_text_len = batch.imgs[0].shape[0] // 4
         sparse = self.to_sparse(batch.gt_texts)
         eval_list = [self.optimizer, self.loss]
         feed_dict = {self.input_imgs: batch.imgs, self.gt_texts: sparse,
-                     self.seq_len: [Model.max_text_len] * num_batch_elements, self.is_train: True}
+                     self.seq_len: [max_text_len] * num_batch_elements, self.is_train: True}
         _, loss_val = self.sess.run(eval_list, feed_dict)
         self.batches_trained += 1
         return loss_val

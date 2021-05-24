@@ -7,7 +7,7 @@ from path import Path
 
 from dataloader_iam import DataLoaderIAM, Batch
 from model import Model, DecoderType
-from preprocessor import preprocess
+from preprocessor import Preprocessor
 
 
 class FilePaths:
@@ -18,18 +18,22 @@ class FilePaths:
     fn_corpus = '../data/corpus.txt'
 
 
+train_img_size = (128, 32)
+
+
 def write_summary(char_error_rates, word_accuracies):
     with open(FilePaths.fn_summary, 'w') as f:
         json.dump({'charErrorRates': char_error_rates, 'wordAccuracies': word_accuracies}, f)
 
 
-def train(model, loader):
+def train(model, loader, line_mode):
     """Trains NN."""
     epoch = 0  # number of training epochs since start
     summary_char_error_rates = []
     summary_word_accuracies = []
+    preprocessor = Preprocessor(train_img_size, data_augmentation=True, line_mode=line_mode)
     best_char_error_rate = float('inf')  # best valdiation character error rate
-    no_improvement_since = 0  # number of epochs no improvement of character error rate occured
+    no_improvement_since = 0  # number of epochs no improvement of character error rate occurred
     early_stopping = 25  # stop training after this number of epochs without improvement
     while True:
         epoch += 1
@@ -41,11 +45,12 @@ def train(model, loader):
         while loader.has_next():
             iter_info = loader.get_iterator_info()
             batch = loader.get_next()
+            batch = preprocessor.process_batch(batch)
             loss = model.train_batch(batch)
             print(f'Epoch: {epoch} Batch: {iter_info[0]}/{iter_info[1]} Loss: {loss}')
 
         # validate
-        char_error_rate, word_accuracy = validate(model, loader)
+        char_error_rate, word_accuracy = validate(model, loader, line_mode)
 
         # write summary
         summary_char_error_rates.append(char_error_rate)
@@ -68,10 +73,11 @@ def train(model, loader):
             break
 
 
-def validate(model, loader):
+def validate(model, loader, line_mode):
     """Validates NN."""
     print('Validate NN')
     loader.validation_set()
+    preprocessor = Preprocessor(train_img_size, line_mode=line_mode)
     num_char_err = 0
     num_char_total = 0
     num_word_ok = 0
@@ -80,7 +86,8 @@ def validate(model, loader):
         iter_info = loader.get_iterator_info()
         print(f'Batch: {iter_info[0]} / {iter_info[1]}')
         batch = loader.get_next()
-        (recognized, _) = model.infer_batch(batch)
+        batch = preprocessor.process_batch(batch)
+        recognized, _ = model.infer_batch(batch)
 
         print('Ground truth -> Recognized')
         for i in range(len(recognized)):
@@ -101,8 +108,9 @@ def validate(model, loader):
 
 def infer(model, fn_img):
     """Recognizes text in image provided by file path."""
-    img = preprocess(cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE), Model.img_size, dynamic_width=True)
-    batch = Batch(None, [img])
+    preprocessor = Preprocessor(train_img_size, dynamic_width=True)
+    img = preprocessor.process_img(cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE))
+    batch = Batch([img], None)
     recognized, probability = model.infer_batch(batch, True)
     print(f'Recognized: "{recognized[0]}"')
     print(f'Probability: {probability[0]}')
@@ -119,6 +127,7 @@ def main():
     parser.add_argument('--data_dir', help='directory containing IAM dataset', type=Path, required=False)
     parser.add_argument('--fast', help='use lmdb to load images', action='store_true')
     parser.add_argument('--dump', help='dump output of NN to CSV file(s)', action='store_true')
+    line_mode = True
     args = parser.parse_args()
 
     # set chosen CTC decoder
@@ -130,21 +139,24 @@ def main():
     # train or validate on IAM dataset
     if args.train or args.validate:
         # load training data, create TF model
-        loader = DataLoaderIAM(args.data_dir, args.batch_size, Model.img_size, Model.max_text_len, args.fast, True)
+        loader = DataLoaderIAM(args.data_dir, args.batch_size, fast=args.fast)
+        char_list = loader.char_list
+        if line_mode:
+            char_list = [' '] + char_list
 
         # save characters of model for inference mode
-        open(FilePaths.fn_char_list, 'w').write(str().join(loader.char_list))
+        open(FilePaths.fn_char_list, 'w').write(''.join(char_list))
 
         # save words contained in dataset into file
-        open(FilePaths.fn_corpus, 'w').write(str(' ').join(loader.train_words + loader.validation_words))
+        open(FilePaths.fn_corpus, 'w').write(' '.join(loader.train_words + loader.validation_words))
 
         # execute training or validation
         if args.train:
-            model = Model(loader.char_list, decoder_type)
-            train(model, loader)
+            model = Model(char_list, decoder_type)
+            train(model, loader, line_mode)
         elif args.validate:
-            model = Model(loader.char_list, decoder_type, must_restore=True)
-            validate(model, loader)
+            model = Model(char_list, decoder_type, must_restore=True)
+            validate(model, loader, line_mode)
 
     # infer text on test image
     else:
