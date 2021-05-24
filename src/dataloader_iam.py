@@ -120,4 +120,4 @@ class DataLoaderIAM:
         gt_texts = [self.samples[i].gt_text for i in batch_range]
 
         self.curr_idx += self.batch_size
-        return Batch(imgs, gt_texts, self.batch_size)
+        return Batch(imgs, gt_texts, len(imgs))
