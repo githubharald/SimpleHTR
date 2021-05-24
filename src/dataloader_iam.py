@@ -136,7 +136,7 @@ class DataLoaderIAM:
             else:
                 img = cv2.imread(self.samples[i].file_path, cv2.IMREAD_GRAYSCALE)
 
-            imgs.append(preprocess(img, self.img_size, self.data_augmentation))
+            imgs.append(preprocess(img, self.img_size, data_augmentation=self.data_augmentation))
 
         self.curr_idx += self.batch_size
         return Batch(gt_texts, imgs)

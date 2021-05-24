@@ -34,7 +34,7 @@ class Model:
         self.is_train = tf.compat.v1.placeholder(tf.bool, name='is_train')
 
         # input image batch
-        self.input_imgs = tf.compat.v1.placeholder(tf.float32, shape=(None, Model.img_size[0], Model.img_size[1]))
+        self.input_imgs = tf.compat.v1.placeholder(tf.float32, shape=(None, None, Model.img_size[1]))
 
         # setup CNN, RNN and CTC
         self.setup_cnn()
@@ -117,7 +117,7 @@ class Model:
 
         # calc loss for each element to compute label probability
         self.saved_ctc_input = tf.compat.v1.placeholder(tf.float32,
-                                                        shape=[Model.max_text_len, None, len(self.char_list) + 1])
+                                                        shape=[None, None, len(self.char_list) + 1])
         self.loss_per_element = tf.compat.v1.nn.ctc_loss(labels=self.gt_texts, inputs=self.saved_ctc_input,
                                                          sequence_length=self.seq_len, ctc_merge_repeated=True)
 
@@ -211,7 +211,7 @@ class Model:
         # map labels to chars for all batch elements
         return [str().join([self.char_list[c] for c in labelStr]) for labelStr in label_strs]
 
-    def trainBatch(self, batch):
+    def train_batch(self, batch):
         """Feed a batch into the NN to train it."""
         num_batch_elements = len(batch.imgs)
         sparse = self.to_sparse(batch.gt_texts)
@@ -259,8 +259,11 @@ class Model:
         if self.dump or calc_probability:
             eval_list.append(self.ctc_in_3d_tbc)
 
+        # sequence length
+        max_text_len = batch.imgs[0].shape[0] // 4
+
         # dict containing all tensor fed into the model
-        feed_dict = {self.input_imgs: batch.imgs, self.seq_len: [Model.max_text_len] * num_batch_elements,
+        feed_dict = {self.input_imgs: batch.imgs, self.seq_len: [max_text_len] * num_batch_elements,
                      self.is_train: False}
 
         # evaluate model
@@ -283,7 +286,7 @@ class Model:
             ctc_input = eval_res[1]
             eval_list = self.loss_per_element
             feed_dict = {self.saved_ctc_input: ctc_input, self.gt_texts: sparse,
-                         self.seq_len: [Model.max_text_len] * num_batch_elements, self.is_train: False}
+                         self.seq_len: [max_text_len] * num_batch_elements, self.is_train: False}
             loss_vals = self.sess.run(eval_list, feed_dict)
             probs = np.exp(-loss_vals)
 

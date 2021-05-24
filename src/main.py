@@ -41,7 +41,7 @@ def train(model, loader):
         while loader.has_next():
             iter_info = loader.get_iterator_info()
             batch = loader.get_next()
-            loss = model.trainBatch(batch)
+            loss = model.train_batch(batch)
             print(f'Epoch: {epoch} Batch: {iter_info[0]}/{iter_info[1]} Loss: {loss}')
 
         # validate
@@ -101,9 +101,9 @@ def validate(model, loader):
 
 def infer(model, fn_img):
     """Recognizes text in image provided by file path."""
-    img = preprocess(cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE), Model.img_size)
+    img = preprocess(cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE), Model.img_size, dynamic_width=True)
     batch = Batch(None, [img])
-    (recognized, probability) = model.infer_batch(batch, True)
+    recognized, probability = model.infer_batch(batch, True)
     print(f'Recognized: "{recognized[0]}"')
     print(f'Probability: {probability[0]}')
 

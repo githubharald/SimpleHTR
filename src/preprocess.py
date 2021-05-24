@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 
-def preprocess(img, img_size, data_augmentation=False):
+def preprocess(img, img_size, dynamic_width=False, data_augmentation=False):
     "put img into target img of size imgSize, transpose for TF and normalize gray-values"
 
     # there are damaged files in IAM dataset - just use black image instead
@@ -51,17 +51,25 @@ def preprocess(img, img_size, data_augmentation=False):
 
     # no data augmentation
     else:
-        # center image
-        wt, ht = img_size
-        h, w = img.shape
-        f = min(wt / w, ht / h)
-        tx = (wt - w * f) / 2
-        ty = (ht - h * f) / 2
+        if dynamic_width:
+            ht = img_size[1]
+            h, w = img.shape
+            f = ht / h
+            wt = int(f * w)
+            wt = wt + (4 - wt) % 4
+            tx = (wt - w * f) / 2
+            ty = 0
+        else:
+            wt, ht = img_size
+            h, w = img.shape
+            f = min(wt / w, ht / h)
+            tx = (wt - w * f) / 2
+            ty = (ht - h * f) / 2
 
         # map image into target image
         M = np.float32([[f, 0, tx], [0, f, ty]])
-        target = np.ones(img_size[::-1]) * 255 / 2
-        img = cv2.warpAffine(img, M, dsize=img_size, dst=target, borderMode=cv2.BORDER_TRANSPARENT)
+        target = np.ones([ht, wt]) * 255 / 2
+        img = cv2.warpAffine(img, M, dsize=(wt, ht), dst=target, borderMode=cv2.BORDER_TRANSPARENT)
 
     # transpose for TF
     img = cv2.transpose(img)
@@ -75,7 +83,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     img = cv2.imread('../data/test.png', cv2.IMREAD_GRAYSCALE)
-    img_aug = preprocess(img, (128, 32), True)
+    img_aug = preprocess(img, (128, 32), data_augmentation=False, dynamic_width=True)
     plt.subplot(121)
     plt.imshow(img, cmap='gray')
     plt.subplot(122)
