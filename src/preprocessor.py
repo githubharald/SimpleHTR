@@ -3,6 +3,9 @@ import random
 import cv2
 import numpy as np
 
+# TODO: change to class
+# TODO: do multi-word simulation in here!
+
 
 def preprocess(img, img_size, dynamic_width=False, data_augmentation=False):
     "put img into target img of size imgSize, transpose for TF and normalize gray-values"
@@ -33,14 +36,14 @@ def preprocess(img, img_size, dynamic_width=False, data_augmentation=False):
         wt, ht = img_size
         h, w = img.shape
         f = min(wt / w, ht / h)
-        fx = f * np.random.uniform(0.75, 1.25)
-        fy = f * np.random.uniform(0.75, 1.25)
+        fx = f * np.random.uniform(0.75, 1.1)
+        fy = f * np.random.uniform(0.75, 1.1)
 
         # random position around center
         txc = (wt - w * fx) / 2
         tyc = (ht - h * fy) / 2
-        freedom_x = max((wt - fx * w) / 2, 0) + wt / 10
-        freedom_y = max((ht - fy * h) / 2, 0) + ht / 10
+        freedom_x = max((wt - fx * w) / 2, 0)
+        freedom_y = max((ht - fy * h) / 2, 0)
         tx = txc + np.random.uniform(-freedom_x, freedom_x)
         ty = tyc + np.random.uniform(-freedom_y, freedom_y)
 

@@ -7,7 +7,7 @@ from path import Path
 
 from dataloader_iam import DataLoaderIAM, Batch
 from model import Model, DecoderType
-from preprocess import preprocess
+from preprocessor import preprocess
 
 
 class FilePaths:
@@ -130,7 +130,7 @@ def main():
     # train or validate on IAM dataset
     if args.train or args.validate:
         # load training data, create TF model
-        loader = DataLoaderIAM(args.data_dir, args.batch_size, Model.img_size, Model.max_text_len, args.fast)
+        loader = DataLoaderIAM(args.data_dir, args.batch_size, Model.img_size, Model.max_text_len, args.fast, True)
 
         # save characters of model for inference mode
         open(FilePaths.fn_char_list, 'w').write(str().join(loader.char_list))

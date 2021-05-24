@@ -259,7 +259,7 @@ class Model:
         if self.dump or calc_probability:
             eval_list.append(self.ctc_in_3d_tbc)
 
-        # sequence length
+        # sequence length depends on input image size (model downsizes width by 4)
         max_text_len = batch.imgs[0].shape[0] // 4
 
         # dict containing all tensor fed into the model
