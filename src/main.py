@@ -5,111 +5,111 @@ import cv2
 import editdistance
 from path import Path
 
-from DataLoaderIAM import DataLoaderIAM, Batch
-from Model import Model, DecoderType
-from SamplePreprocessor import preprocess
+from dataloader_iam import DataLoaderIAM, Batch
+from model import Model, DecoderType
+from preprocess import preprocess
 
 
 class FilePaths:
-    "filenames and paths to data"
-    fnCharList = '../model/charList.txt'
-    fnSummary = '../model/summary.json'
-    fnInfer = '../data/test.png'
-    fnCorpus = '../data/corpus.txt'
+    """Filenames and paths to data."""
+    fn_char_list = '../model/charList.txt'
+    fn_summary = '../model/summary.json'
+    fn_infer = '../data/test.png'
+    fn_corpus = '../data/corpus.txt'
 
 
-def write_summary(charErrorRates, wordAccuracies):
-    with open(FilePaths.fnSummary, 'w') as f:
-        json.dump({'charErrorRates': charErrorRates, 'wordAccuracies': wordAccuracies}, f)
+def write_summary(char_error_rates, word_accuracies):
+    with open(FilePaths.fn_summary, 'w') as f:
+        json.dump({'charErrorRates': char_error_rates, 'wordAccuracies': word_accuracies}, f)
 
 
 def train(model, loader):
-    "train NN"
+    """Trains NN."""
     epoch = 0  # number of training epochs since start
-    summaryCharErrorRates = []
-    summaryWordAccuracies = []
-    bestCharErrorRate = float('inf')  # best valdiation character error rate
-    noImprovementSince = 0  # number of epochs no improvement of character error rate occured
-    earlyStopping = 25  # stop training after this number of epochs without improvement
+    summary_char_error_rates = []
+    summary_word_accuracies = []
+    best_char_error_rate = float('inf')  # best valdiation character error rate
+    no_improvement_since = 0  # number of epochs no improvement of character error rate occured
+    early_stopping = 25  # stop training after this number of epochs without improvement
     while True:
         epoch += 1
         print('Epoch:', epoch)
 
         # train
         print('Train NN')
-        loader.trainSet()
-        while loader.hasNext():
-            iterInfo = loader.getIteratorInfo()
-            batch = loader.getNext()
+        loader.train_set()
+        while loader.has_next():
+            iter_info = loader.get_iterator_info()
+            batch = loader.get_next()
             loss = model.trainBatch(batch)
-            print(f'Epoch: {epoch} Batch: {iterInfo[0]}/{iterInfo[1]} Loss: {loss}')
+            print(f'Epoch: {epoch} Batch: {iter_info[0]}/{iter_info[1]} Loss: {loss}')
 
         # validate
-        charErrorRate, wordAccuracy = validate(model, loader)
+        char_error_rate, word_accuracy = validate(model, loader)
 
         # write summary
-        summaryCharErrorRates.append(charErrorRate)
-        summaryWordAccuracies.append(wordAccuracy)
-        write_summary(summaryCharErrorRates, summaryWordAccuracies)
+        summary_char_error_rates.append(char_error_rate)
+        summary_word_accuracies.append(word_accuracy)
+        write_summary(summary_char_error_rates, summary_word_accuracies)
 
         # if best validation accuracy so far, save model parameters
-        if charErrorRate < bestCharErrorRate:
+        if char_error_rate < best_char_error_rate:
             print('Character error rate improved, save model')
-            bestCharErrorRate = charErrorRate
-            noImprovementSince = 0
+            best_char_error_rate = char_error_rate
+            no_improvement_since = 0
             model.save()
         else:
-            print(f'Character error rate not improved, best so far: {charErrorRate * 100.0}%')
-            noImprovementSince += 1
+            print(f'Character error rate not improved, best so far: {char_error_rate * 100.0}%')
+            no_improvement_since += 1
 
         # stop training if no more improvement in the last x epochs
-        if noImprovementSince >= earlyStopping:
-            print(f'No more improvement since {earlyStopping} epochs. Training stopped.')
+        if no_improvement_since >= early_stopping:
+            print(f'No more improvement since {early_stopping} epochs. Training stopped.')
             break
 
 
 def validate(model, loader):
-    "validate NN"
+    """Validates NN."""
     print('Validate NN')
-    loader.validationSet()
-    numCharErr = 0
-    numCharTotal = 0
-    numWordOK = 0
-    numWordTotal = 0
-    while loader.hasNext():
-        iterInfo = loader.getIteratorInfo()
-        print(f'Batch: {iterInfo[0]} / {iterInfo[1]}')
-        batch = loader.getNext()
-        (recognized, _) = model.inferBatch(batch)
+    loader.validation_set()
+    num_char_err = 0
+    num_char_total = 0
+    num_word_ok = 0
+    num_word_total = 0
+    while loader.has_next():
+        iter_info = loader.get_iterator_info()
+        print(f'Batch: {iter_info[0]} / {iter_info[1]}')
+        batch = loader.get_next()
+        (recognized, _) = model.infer_batch(batch)
 
         print('Ground truth -> Recognized')
         for i in range(len(recognized)):
-            numWordOK += 1 if batch.gtTexts[i] == recognized[i] else 0
-            numWordTotal += 1
-            dist = editdistance.eval(recognized[i], batch.gtTexts[i])
-            numCharErr += dist
-            numCharTotal += len(batch.gtTexts[i])
-            print('[OK]' if dist == 0 else '[ERR:%d]' % dist, '"' + batch.gtTexts[i] + '"', '->',
+            num_word_ok += 1 if batch.gt_texts[i] == recognized[i] else 0
+            num_word_total += 1
+            dist = editdistance.eval(recognized[i], batch.gt_texts[i])
+            num_char_err += dist
+            num_char_total += len(batch.gt_texts[i])
+            print('[OK]' if dist == 0 else '[ERR:%d]' % dist, '"' + batch.gt_texts[i] + '"', '->',
                   '"' + recognized[i] + '"')
 
     # print validation result
-    charErrorRate = numCharErr / numCharTotal
-    wordAccuracy = numWordOK / numWordTotal
-    print(f'Character error rate: {charErrorRate * 100.0}%. Word accuracy: {wordAccuracy * 100.0}%.')
-    return charErrorRate, wordAccuracy
+    char_error_rate = num_char_err / num_char_total
+    word_accuracy = num_word_ok / num_word_total
+    print(f'Character error rate: {char_error_rate * 100.0}%. Word accuracy: {word_accuracy * 100.0}%.')
+    return char_error_rate, word_accuracy
 
 
-def infer(model, fnImg):
-    "recognize text in image provided by file path"
-    img = preprocess(cv2.imread(fnImg, cv2.IMREAD_GRAYSCALE), Model.imgSize)
+def infer(model, fn_img):
+    """Recognizes text in image provided by file path."""
+    img = preprocess(cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE), Model.img_size)
     batch = Batch(None, [img])
-    (recognized, probability) = model.inferBatch(batch, True)
+    (recognized, probability) = model.infer_batch(batch, True)
     print(f'Recognized: "{recognized[0]}"')
     print(f'Probability: {probability[0]}')
 
 
 def main():
-    "main function"
+    """Main function."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--train', help='train the NN', action='store_true')
     parser.add_argument('--validate', help='validate the NN', action='store_true')
@@ -122,36 +122,34 @@ def main():
     args = parser.parse_args()
 
     # set chosen CTC decoder
-    if args.decoder == 'bestpath':
-        decoderType = DecoderType.BestPath
-    elif args.decoder == 'beamsearch':
-        decoderType = DecoderType.BeamSearch
-    elif args.decoder == 'wordbeamsearch':
-        decoderType = DecoderType.WordBeamSearch
+    decoder_mapping = {'bestpath': DecoderType.BestPath,
+                       'beamsearch': DecoderType.BeamSearch,
+                       'wordbeamsearch': DecoderType.WordBeamSearch}
+    decoder_type = decoder_mapping[args.decoder]
 
     # train or validate on IAM dataset
     if args.train or args.validate:
         # load training data, create TF model
-        loader = DataLoaderIAM(args.data_dir, args.batch_size, Model.imgSize, Model.maxTextLen, args.fast)
+        loader = DataLoaderIAM(args.data_dir, args.batch_size, Model.img_size, Model.max_text_len, args.fast)
 
         # save characters of model for inference mode
-        open(FilePaths.fnCharList, 'w').write(str().join(loader.charList))
+        open(FilePaths.fn_char_list, 'w').write(str().join(loader.char_list))
 
         # save words contained in dataset into file
-        open(FilePaths.fnCorpus, 'w').write(str(' ').join(loader.trainWords + loader.validationWords))
+        open(FilePaths.fn_corpus, 'w').write(str(' ').join(loader.train_words + loader.validation_words))
 
         # execute training or validation
         if args.train:
-            model = Model(loader.charList, decoderType)
+            model = Model(loader.char_list, decoder_type)
             train(model, loader)
         elif args.validate:
-            model = Model(loader.charList, decoderType, mustRestore=True)
+            model = Model(loader.char_list, decoder_type, must_restore=True)
             validate(model, loader)
 
     # infer text on test image
     else:
-        model = Model(open(FilePaths.fnCharList).read(), decoderType, mustRestore=True, dump=args.dump)
-        infer(model, FilePaths.fnInfer)
+        model = Model(open(FilePaths.fn_char_list).read(), decoder_type, must_restore=True, dump=args.dump)
+        infer(model, FilePaths.fn_infer)
 
 
 if __name__ == '__main__':

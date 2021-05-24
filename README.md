@@ -78,7 +78,7 @@ Follow these instructions to get the IAM dataset:
 ### Fast image loading
 Loading and decoding the png image files from the disk is the bottleneck even when using only a small GPU.
 The database LMDB is used to speed up image loading:
-* Go to the `src` directory and run `createLMDB.py --data_dir path/to/IAM` with the IAM data directory specified
+* Go to the `src` directory and run `create_lmdb.py --data_dir path/to/IAM` with the IAM data directory specified
 * A subfolder `lmdb` is created in the IAM data directory containing the LMDB files
 * When training the model, add the command line option `--fast`
 
