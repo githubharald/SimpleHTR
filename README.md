@@ -1,42 +1,59 @@
 # Handwritten Text Recognition with TensorFlow
 
-* **Update 2021: more robust model, faster dataloader, word beam search decoder also available for Windows**
+* **Update 2021/2: recognize text on line level (multiple words)**
+* **Update 2021/1: more robust model, faster dataloader, word beam search decoder also available for Windows**
 * **Update 2020: code is compatible with TF2**
 
 
 Handwritten Text Recognition (HTR) system implemented with TensorFlow (TF) and trained on the IAM off-line HTR dataset.
-This Neural Network (NN) model recognizes the text contained in the images of segmented words as shown in the illustration below.
+The model takes **images of single words or text lines (multiple words) as input** and **outputs the recognized text**.
 3/4 of the words from the validation-set are correctly recognized, and the character error rate is around 10%.
 
 ![htr](./doc/htr.png)
 
 
 ## Run demo
-[Download the model](https://www.dropbox.com/s/lod3gabgtuj0zzn/model.zip?dl=1) trained on the IAM dataset.
-Put the contents of the downloaded file `model.zip` into the `model` directory of the repository.
-Afterwards, go to the `src` directory and run `python main.py`.
-The input image and the expected output is shown below.
 
-![test](./data/test.png)
+* Download one of the trained models
+  * [Model trained on word images](https://www.dropbox.com/s/lod3gabgtuj0zzn/model.zip?dl=1): 
+    only handle single words per image, but gives better results for IAM word dataset
+  * [Model trained on text line images](TODO):
+    can handle multiple words in one image
+* Put the contents of the downloaded zip-file into the `model` directory of the repository  
+* Go to the `src` directory 
+* Run inference code:
+  * Execute `python main.py` to run the model on an image of a word
+  * Execute `python main.py --img_file ../data/line.png` to run the model on an image of a text line
 
+The input images, and the expected outputs are shown below when the text line model is used.
+
+![test](./data/word.png)
 ```
 > python main.py
-Init with stored values from ../model/snapshot-39
-Recognized: "Hello"
-Probability: 0.42098119854927063
+Init with stored values from ../model/snapshot-15
+Recognized: "word"
+Probability: 0.9741360545158386
+```
+
+![test](./data/line.png)
+
+```
+> python main.py --img_file ../data/line.png
+Init with stored values from ../model/snapshot-15
+Recognized: "or work on line level"
+Probability: 0.8010453581809998
 ```
 
 
 ## Command line arguments
-* `--train`: train the NN on 95% of the dataset samples and validate on the remaining 5%
-* `--validate`: validate the trained NN
-* `--decoder`: select from CTC decoders "bestpath", "beamsearch", and "wordbeamsearch". Defaults to "bestpath". For option "wordbeamsearch" see details below
-* `--batch_size`: batch size
-* `--data_dir`: directory containing IAM dataset (with subdirectories `img` and `gt`)
-* `--fast`: use LMDB to load images (faster than loading image files from disk)
-* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder)
-
-If neither `--train` nor `--validate` is specified, the NN infers the text from the test image (`data/test.png`).
+* `--mode`: select between "train", "validate" and "infer". Defaults to "infer".
+* `--decoder`: select from CTC decoders "bestpath", "beamsearch" and "wordbeamsearch". Defaults to "bestpath". For option "wordbeamsearch" see details below.
+* `--batch_size`: batch size.
+* `--data_dir`: directory containing IAM dataset (with subdirectories `img` and `gt`).
+* `--fast`: use LMDB to load images (faster than loading image files from disk).
+* `--line_mode`': train reading text lines instead of single words
+* `--img_file`: image that is used for inference.
+* `--dump`: dumps the output of the NN to CSV file(s) saved in the `dump` folder. Can be used as input for the [CTCDecoder](https://github.com/githubharald/CTCDecoder).
 
 
 ## Integrate word beam search decoding
@@ -72,7 +89,10 @@ Follow these instructions to get the IAM dataset:
 ### Start the training
 
 * Delete files from `model` directory if you want to train from scratch
-* Go to the `src` directory and execute `python main.py --train --data_dir path/to/IAM`
+* Go to the `src` directory and execute `python main.py --mode train --data_dir path/to/IAM`
+* The IAM dataset is split into 95% training data and 5% validation data  
+* If the option `--line_mode` is specified, 
+  the model is trained on text line images created by combining multiple word images into one  
 * Training stops after a fixed number of epochs without improvement
 
 ### Fast image loading
@@ -83,7 +103,8 @@ The database LMDB is used to speed up image loading:
 * When training the model, add the command line option `--fast`
 
 The dataset should be located on an SSD drive.
-Using the `--fast` option and a GTX 1050 Ti training takes around 3h with a batch size of 500.
+Using the `--fast` option and a GTX 1050 Ti training single words takes around 3h with a batch size of 500.
+Training text lines takes a bit longer.
 
 
 ## Information about model
@@ -93,7 +114,8 @@ What remains is what I think is the bare minimum to recognize text with an accep
 It consists of 5 CNN layers, 2 RNN (LSTM) layers and the CTC loss and decoding layer.
 The illustration below gives an overview of the NN (green: operations, pink: data flowing through NN) and here follows a short description:
 
-* The input image is a gray-value image and has a size of 128x32
+* The input image is a gray-value image and has a size of 128x32 
+  (in training mode the width is fixed, while in inference mode there is no restriction other than being a multiple of 4)
 * 5 CNN layers map the input image to a feature sequence of size 32x256
 * 2 LSTM layers with 256 units propagate information through the sequence and map the sequence to a matrix of size 32x80. Each matrix-element represents a score for one of the 80 characters at one of the 32 time-steps
 * The CTC layer either calculates the loss value given the matrix and the ground-truth text (when training), or it decodes the matrix to the final text with best path decoding or beam search decoding (when inferring)

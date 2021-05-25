@@ -1,6 +1,7 @@
 import pickle
 import random
 from collections import namedtuple
+from typing import Tuple
 
 import cv2
 import lmdb
@@ -14,7 +15,11 @@ Batch = namedtuple('Batch', 'imgs, gt_texts, batch_size')
 class DataLoaderIAM:
     "loads data which corresponds to IAM format, see: http://www.fki.inf.unibe.ch/databases/iam-handwriting-database"
 
-    def __init__(self, data_dir, batch_size, fast=True):
+    def __init__(self,
+                 data_dir: Path,
+                 batch_size: int,
+                 data_split: float = 0.95,
+                 fast: bool = True) -> None:
         """Loader for dataset."""
 
         assert data_dir.exists()
@@ -56,7 +61,7 @@ class DataLoaderIAM:
             self.samples.append(Sample(gt_text, file_name))
 
         # split into training and validation set: 95% - 5%
-        split_idx = int(0.95 * len(self.samples))
+        split_idx = int(data_split * len(self.samples))
         self.train_samples = self.samples[:split_idx]
         self.validation_samples = self.samples[split_idx:]
 
@@ -70,7 +75,7 @@ class DataLoaderIAM:
         # list of all chars in dataset
         self.char_list = sorted(list(chars))
 
-    def train_set(self):
+    def train_set(self) -> None:
         """Switch to randomly chosen subset of training set."""
         self.data_augmentation = True
         self.curr_idx = 0
@@ -78,14 +83,14 @@ class DataLoaderIAM:
         self.samples = self.train_samples
         self.curr_set = 'train'
 
-    def validation_set(self):
+    def validation_set(self) -> None:
         "switch to validation set"
         self.data_augmentation = False
         self.curr_idx = 0
         self.samples = self.validation_samples
         self.curr_set = 'val'
 
-    def get_iterator_info(self):
+    def get_iterator_info(self) -> Tuple[int, int]:
         """Current batch index and overall number of batches."""
         if self.curr_set == 'train':
             num_batches = int(np.floor(len(self.samples) / self.batch_size))  # train set: only full-sized batches
@@ -94,14 +99,14 @@ class DataLoaderIAM:
         curr_batch = self.curr_idx // self.batch_size + 1
         return curr_batch, num_batches
 
-    def has_next(self):
+    def has_next(self) -> bool:
         "iterator"
         if self.curr_set == 'train':
             return self.curr_idx + self.batch_size <= len(self.samples)  # train set: only full-sized batches
         else:
             return self.curr_idx < len(self.samples)  # val set: allow last batch to be smaller
 
-    def _get_img(self, i):
+    def _get_img(self, i: int) -> np.ndarray:
         if self.fast:
             with self.env.begin() as txn:
                 basename = Path(self.samples[i].file_path).basename()
@@ -112,7 +117,7 @@ class DataLoaderIAM:
 
         return img
 
-    def get_next(self):
+    def get_next(self) -> Batch:
         "Iterator."
         batch_range = range(self.curr_idx, min(self.curr_idx + self.batch_size, len(self.samples)))
 

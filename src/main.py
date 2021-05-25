@@ -1,5 +1,6 @@
 import argparse
 import json
+from typing import Tuple, List
 
 import cv2
 import editdistance
@@ -14,24 +15,30 @@ class FilePaths:
     """Filenames and paths to data."""
     fn_char_list = '../model/charList.txt'
     fn_summary = '../model/summary.json'
-    fn_infer = '../data/test.png'
     fn_corpus = '../data/corpus.txt'
 
 
-train_img_size = (128, 32)
+def get_img_height() -> int:
+    return 32
 
 
-def write_summary(char_error_rates, word_accuracies):
+def get_img_size(line_mode: bool = False) -> Tuple[int, int]:
+    if line_mode:
+        return 256, get_img_height()
+    return 128, get_img_height()
+
+
+def write_summary(char_error_rates: List[float], word_accuracies: List[float]) -> None:
     with open(FilePaths.fn_summary, 'w') as f:
         json.dump({'charErrorRates': char_error_rates, 'wordAccuracies': word_accuracies}, f)
 
 
-def train(model, loader, line_mode):
+def train(model: Model, loader: DataLoaderIAM, line_mode: bool) -> None:
     """Trains NN."""
     epoch = 0  # number of training epochs since start
     summary_char_error_rates = []
     summary_word_accuracies = []
-    preprocessor = Preprocessor(train_img_size, data_augmentation=True, line_mode=line_mode)
+    preprocessor = Preprocessor(get_img_size(line_mode), data_augmentation=True, line_mode=line_mode)
     best_char_error_rate = float('inf')  # best valdiation character error rate
     no_improvement_since = 0  # number of epochs no improvement of character error rate occurred
     early_stopping = 25  # stop training after this number of epochs without improvement
@@ -73,11 +80,11 @@ def train(model, loader, line_mode):
             break
 
 
-def validate(model, loader, line_mode):
+def validate(model: Model, loader: DataLoaderIAM, line_mode: bool) -> Tuple[float, float]:
     """Validates NN."""
     print('Validate NN')
     loader.validation_set()
-    preprocessor = Preprocessor(train_img_size, line_mode=line_mode)
+    preprocessor = Preprocessor(get_img_size(line_mode), line_mode=line_mode)
     num_char_err = 0
     num_char_total = 0
     num_word_ok = 0
@@ -106,11 +113,11 @@ def validate(model, loader, line_mode):
     return char_error_rate, word_accuracy
 
 
-def infer(model, fn_img):
+def infer(model: Model, fn_img: Path) -> None:
     """Recognizes text in image provided by file path."""
-    preprocessor = Preprocessor(train_img_size, dynamic_width=True)
+    preprocessor = Preprocessor(get_img_size(), dynamic_width=True, padding=16)
     img = preprocessor.process_img(cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE))
-    batch = Batch([img], None)
+    batch = Batch([img], None, 1)
     recognized, probability = model.infer_batch(batch, True)
     print(f'Recognized: "{recognized[0]}"')
     print(f'Probability: {probability[0]}')
@@ -119,15 +126,15 @@ def infer(model, fn_img):
 def main():
     """Main function."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train', help='train the NN', action='store_true')
-    parser.add_argument('--validate', help='validate the NN', action='store_true')
-    parser.add_argument('--decoder', choices=['bestpath', 'beamsearch', 'wordbeamsearch'], default='bestpath',
-                        help='CTC decoder')
-    parser.add_argument('--batch_size', help='batch size', type=int, default=100)
-    parser.add_argument('--data_dir', help='directory containing IAM dataset', type=Path, required=False)
-    parser.add_argument('--fast', help='use lmdb to load images', action='store_true')
-    parser.add_argument('--dump', help='dump output of NN to CSV file(s)', action='store_true')
-    line_mode = True
+
+    parser.add_argument('--mode', choices=['train', 'validate', 'infer'], default='infer')
+    parser.add_argument('--decoder', choices=['bestpath', 'beamsearch', 'wordbeamsearch'], default='bestpath')
+    parser.add_argument('--batch_size', help='Batch size.', type=int, default=100)
+    parser.add_argument('--data_dir', help='Directory containing IAM dataset.', type=Path, required=False)
+    parser.add_argument('--fast', help='Load samples from LMDB.', action='store_true')
+    parser.add_argument('--line_mode', help='Train to read text lines instead of single words.', action='store_true')
+    parser.add_argument('--img_file', help='Image used for inference.', type=Path, default='../data/word.png')
+    parser.add_argument('--dump', help='Dump output of NN to CSV file(s).', action='store_true')
     args = parser.parse_args()
 
     # set chosen CTC decoder
@@ -137,11 +144,13 @@ def main():
     decoder_type = decoder_mapping[args.decoder]
 
     # train or validate on IAM dataset
-    if args.train or args.validate:
+    if args.mode in ['train', 'validate']:
         # load training data, create TF model
         loader = DataLoaderIAM(args.data_dir, args.batch_size, fast=args.fast)
         char_list = loader.char_list
-        if line_mode:
+
+        # when in line mode, take care to have a whitespace in the char list
+        if args.line_mode and ' ' not in char_list:
             char_list = [' '] + char_list
 
         # save characters of model for inference mode
@@ -151,17 +160,17 @@ def main():
         open(FilePaths.fn_corpus, 'w').write(' '.join(loader.train_words + loader.validation_words))
 
         # execute training or validation
-        if args.train:
+        if args.mode == 'train':
             model = Model(char_list, decoder_type)
-            train(model, loader, line_mode)
-        elif args.validate:
+            train(model, loader, args.line_mode)
+        elif args.mode == 'validate':
             model = Model(char_list, decoder_type, must_restore=True)
-            validate(model, loader, line_mode)
+            validate(model, loader, args.line_mode)
 
     # infer text on test image
-    else:
-        model = Model(open(FilePaths.fn_char_list).read(), decoder_type, must_restore=True, dump=args.dump)
-        infer(model, FilePaths.fn_infer)
+    elif args.mode == 'infer':
+        model = Model(list(open(FilePaths.fn_char_list).read()), decoder_type, must_restore=True, dump=args.dump)
+        infer(model, args.img_file)
 
 
 if __name__ == '__main__':

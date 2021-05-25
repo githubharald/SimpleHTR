@@ -1,8 +1,11 @@
 import os
 import sys
+from typing import List, Tuple
 
 import numpy as np
 import tensorflow as tf
+
+from dataloader_iam import Batch
 
 # Disable eager mode
 tf.compat.v1.disable_eager_execution()
@@ -18,7 +21,11 @@ class DecoderType:
 class Model:
     """Minimalistic TF model for HTR."""
 
-    def __init__(self, char_list, decoder_type=DecoderType.BestPath, must_restore=False, dump=False):
+    def __init__(self,
+                 char_list: List[str],
+                 decoder_type: str = DecoderType.BestPath,
+                 must_restore: bool = False,
+                 dump: bool = False) -> None:
         """Init model: add CNN, RNN and CTC and initialize TF."""
         self.dump = dump
         self.char_list = char_list
@@ -46,7 +53,7 @@ class Model:
         # initialize TF
         self.sess, self.saver = self.setup_tf()
 
-    def setup_cnn(self):
+    def setup_cnn(self) -> None:
         """Create CNN layers."""
         cnn_in4d = tf.expand_dims(input=self.input_imgs, axis=3)
 
@@ -70,7 +77,7 @@ class Model:
 
         self.cnn_out_4d = pool
 
-    def setup_rnn(self):
+    def setup_rnn(self) -> None:
         """Create RNN layers."""
         rnn_in3d = tf.squeeze(self.cnn_out_4d, axis=[2])
 
@@ -95,7 +102,7 @@ class Model:
         self.rnn_out_3d = tf.squeeze(tf.nn.atrous_conv2d(value=concat, filters=kernel, rate=1, padding='SAME'),
                                      axis=[2])
 
-    def setup_ctc(self):
+    def setup_ctc(self) -> None:
         """Create CTC loss and decoder."""
         # BxTxC -> TxBxC
         self.ctc_in_3d_tbc = tf.transpose(a=self.rnn_out_3d, perm=[1, 0, 2])
@@ -126,7 +133,7 @@ class Model:
         # word beam search decoding (see https://github.com/githubharald/CTCWordBeamSearch)
         elif self.decoder_type == DecoderType.WordBeamSearch:
             # prepare information about language (dictionary, characters in dataset, characters forming words)
-            chars = str().join(self.char_list)
+            chars = ''.join(self.char_list)
             word_chars = open('../model/wordCharList.txt').read().splitlines()[0]
             corpus = open('../data/corpus.txt').read()
 
@@ -138,7 +145,7 @@ class Model:
             # the input to the decoder must have softmax already applied
             self.wbs_input = tf.nn.softmax(self.ctc_in_3d_tbc, axis=2)
 
-    def setup_tf(self):
+    def setup_tf(self) -> None:
         """Initialize TF."""
         print('Python: ' + sys.version)
         print('Tensorflow: ' + tf.__version__)
@@ -163,14 +170,14 @@ class Model:
 
         return sess, saver
 
-    def to_sparse(self, texts):
+    def to_sparse(self, texts: List[str]) -> Tuple[List[List[int]], List[int], Tuple[int, int]]:
         """Put ground truth texts into sparse tensor for ctc_loss."""
         indices = []
         values = []
         shape = [len(texts), 0]  # last entry must be max(labelList[i])
 
         # go over all texts
-        for (batchElement, text) in enumerate(texts):
+        for batchElement, text in enumerate(texts):
             # convert to string of label (i.e. class-ids)
             label_str = [self.char_list.index(c) for c in text]
             # sparse tensor must have size of max. label-string
@@ -183,7 +190,7 @@ class Model:
 
         return indices, values, shape
 
-    def decoder_output_to_text(self, ctc_output, batch_size):
+    def decoder_output_to_text(self, ctc_output: tuple, batch_size: int) -> List[str]:
         """Extract texts from output of CTC decoder."""
 
         # word beam search: already contains label strings
@@ -205,9 +212,9 @@ class Model:
                 label_strs[batch_element].append(label)
 
         # map labels to chars for all batch elements
-        return [str().join([self.char_list[c] for c in labelStr]) for labelStr in label_strs]
+        return [''.join([self.char_list[c] for c in labelStr]) for labelStr in label_strs]
 
-    def train_batch(self, batch):
+    def train_batch(self, batch: Batch) -> float:
         """Feed a batch into the NN to train it."""
         num_batch_elements = len(batch.imgs)
         max_text_len = batch.imgs[0].shape[0] // 4
@@ -220,7 +227,7 @@ class Model:
         return loss_val
 
     @staticmethod
-    def dump_nn_output(rnn_output):
+    def dump_nn_output(rnn_output: np.ndarray) -> None:
         """Dump the output of the NN to CSV file(s)."""
         dump_dir = '../dump/'
         if not os.path.isdir(dump_dir):
@@ -239,7 +246,7 @@ class Model:
             with open(fn, 'w') as f:
                 f.write(csv)
 
-    def infer_batch(self, batch, calc_probability=False, probability_of_gt=False):
+    def infer_batch(self, batch: Batch, calc_probability: bool = False, probability_of_gt: bool = False):
         """Feed a batch into the NN to recognize the texts."""
 
         # decode, optionally save RNN output
@@ -293,7 +300,7 @@ class Model:
 
         return texts, probs
 
-    def save(self):
+    def save(self) -> None:
         """Save model to file."""
         self.snap_ID += 1
         self.saver.save(self.sess, '../model/snapshot', global_step=self.snap_ID)
