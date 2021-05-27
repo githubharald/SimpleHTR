@@ -19,21 +19,27 @@ class FilePaths:
 
 
 def get_img_height() -> int:
+    """Fixed height for NN."""
     return 32
 
 
 def get_img_size(line_mode: bool = False) -> Tuple[int, int]:
+    """Height is fixed for NN, width is set according to training mode (single words or text lines)."""
     if line_mode:
         return 256, get_img_height()
     return 128, get_img_height()
 
 
 def write_summary(char_error_rates: List[float], word_accuracies: List[float]) -> None:
+    """Writes training summary file for NN."""
     with open(FilePaths.fn_summary, 'w') as f:
         json.dump({'charErrorRates': char_error_rates, 'wordAccuracies': word_accuracies}, f)
 
 
-def train(model: Model, loader: DataLoaderIAM, line_mode: bool) -> None:
+def train(model: Model,
+          loader: DataLoaderIAM,
+          line_mode: bool,
+          early_stopping: int = 25) -> None:
     """Trains NN."""
     epoch = 0  # number of training epochs since start
     summary_char_error_rates = []
@@ -41,7 +47,7 @@ def train(model: Model, loader: DataLoaderIAM, line_mode: bool) -> None:
     preprocessor = Preprocessor(get_img_size(line_mode), data_augmentation=True, line_mode=line_mode)
     best_char_error_rate = float('inf')  # best valdiation character error rate
     no_improvement_since = 0  # number of epochs no improvement of character error rate occurred
-    early_stopping = 25  # stop training after this number of epochs without improvement
+    # stop training after this number of epochs without improvement
     while True:
         epoch += 1
         print('Epoch:', epoch)
@@ -115,8 +121,12 @@ def validate(model: Model, loader: DataLoaderIAM, line_mode: bool) -> Tuple[floa
 
 def infer(model: Model, fn_img: Path) -> None:
     """Recognizes text in image provided by file path."""
+    img = cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE)
+    assert img is not None
+
     preprocessor = Preprocessor(get_img_size(), dynamic_width=True, padding=16)
-    img = preprocessor.process_img(cv2.imread(fn_img, cv2.IMREAD_GRAYSCALE))
+    img = preprocessor.process_img(img)
+
     batch = Batch([img], None, 1)
     recognized, probability = model.infer_batch(batch, True)
     print(f'Recognized: "{recognized[0]}"')
@@ -134,6 +144,7 @@ def main():
     parser.add_argument('--fast', help='Load samples from LMDB.', action='store_true')
     parser.add_argument('--line_mode', help='Train to read text lines instead of single words.', action='store_true')
     parser.add_argument('--img_file', help='Image used for inference.', type=Path, default='../data/word.png')
+    parser.add_argument('--early_stopping', help='Early stopping epochs.', type=int, default=25)
     parser.add_argument('--dump', help='Dump output of NN to CSV file(s).', action='store_true')
     args = parser.parse_args()
 
@@ -162,7 +173,7 @@ def main():
         # execute training or validation
         if args.mode == 'train':
             model = Model(char_list, decoder_type)
-            train(model, loader, args.line_mode)
+            train(model, loader, line_mode=args.line_mode, early_stopping=args.early_stopping)
         elif args.mode == 'validate':
             model = Model(char_list, decoder_type, must_restore=True)
             validate(model, loader, args.line_mode)

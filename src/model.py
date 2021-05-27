@@ -145,7 +145,7 @@ class Model:
             # the input to the decoder must have softmax already applied
             self.wbs_input = tf.nn.softmax(self.ctc_in_3d_tbc, axis=2)
 
-    def setup_tf(self) -> None:
+    def setup_tf(self) -> Tuple[tf.compat.v1.Session, tf.compat.v1.train.Saver]:
         """Initialize TF."""
         print('Python: ' + sys.version)
         print('Tensorflow: ' + tf.__version__)
@@ -170,7 +170,7 @@ class Model:
 
         return sess, saver
 
-    def to_sparse(self, texts: List[str]) -> Tuple[List[List[int]], List[int], Tuple[int, int]]:
+    def to_sparse(self, texts: List[str]) -> Tuple[List[List[int]], List[int], List[int]]:
         """Put ground truth texts into sparse tensor for ctc_loss."""
         indices = []
         values = []

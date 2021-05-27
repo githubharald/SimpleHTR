@@ -100,7 +100,8 @@ class Preprocessor:
         if self.data_augmentation:
             # photometric data augmentation
             if random.random() < 0.25:
-                rand_odd = lambda: random.randint(1, 3) * 2 + 1
+                def rand_odd():
+                    return random.randint(1, 3) * 2 + 1
                 img = cv2.GaussianBlur(img, (rand_odd(), rand_odd()), 0)
             if random.random() < 0.25:
                 img = cv2.dilate(img, np.ones((3, 3)))
@@ -174,7 +175,7 @@ class Preprocessor:
         return Batch(res_imgs, res_gt_texts, batch.batch_size)
 
 
-if __name__ == '__main__':
+def main():
     import matplotlib.pyplot as plt
 
     img = cv2.imread('../data/test.png', cv2.IMREAD_GRAYSCALE)
@@ -184,3 +185,7 @@ if __name__ == '__main__':
     plt.subplot(122)
     plt.imshow(cv2.transpose(img_aug) + 0.5, cmap='gray', vmin=0, vmax=1)
     plt.show()
+
+
+if __name__ == '__main__':
+    main()

@@ -13,7 +13,10 @@ Batch = namedtuple('Batch', 'imgs, gt_texts, batch_size')
 
 
 class DataLoaderIAM:
-    "loads data which corresponds to IAM format, see: http://www.fki.inf.unibe.ch/databases/iam-handwriting-database"
+    """
+    Loads data which corresponds to IAM format,
+    see: http://www.fki.inf.unibe.ch/databases/iam-handwriting-database
+    """
 
     def __init__(self,
                  data_dir: Path,
@@ -46,8 +49,10 @@ class DataLoaderIAM:
 
             # filename: part1-part2-part3 --> part1/part1-part2/part1-part2-part3.png
             file_name_split = line_split[0].split('-')
-            file_name = data_dir / 'img' / file_name_split[0] / f'{file_name_split[0]}-{file_name_split[1]}' / \
-                        line_split[0] + '.png'
+            file_name_subdir1 = file_name_split[0]
+            file_name_subdir2 = f'{file_name_split[0]}-{file_name_split[1]}'
+            file_base_name = line_split[0] + '.png'
+            file_name = data_dir / 'img' / file_name_subdir1 / file_name_subdir2 / file_base_name
 
             if line_split[0] in bad_samples_reference:
                 print('Ignoring known broken image:', file_name)
@@ -84,7 +89,7 @@ class DataLoaderIAM:
         self.curr_set = 'train'
 
     def validation_set(self) -> None:
-        "switch to validation set"
+        """Switch to validation set."""
         self.data_augmentation = False
         self.curr_idx = 0
         self.samples = self.validation_samples
@@ -100,7 +105,7 @@ class DataLoaderIAM:
         return curr_batch, num_batches
 
     def has_next(self) -> bool:
-        "iterator"
+        """Is there a next element?"""
         if self.curr_set == 'train':
             return self.curr_idx + self.batch_size <= len(self.samples)  # train set: only full-sized batches
         else:
@@ -118,7 +123,7 @@ class DataLoaderIAM:
         return img
 
     def get_next(self) -> Batch:
-        "Iterator."
+        """Get next element."""
         batch_range = range(self.curr_idx, min(self.curr_idx + self.batch_size, len(self.samples)))
 
         imgs = [self._get_img(i) for i in batch_range]
