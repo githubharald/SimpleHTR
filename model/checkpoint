@@ -1,0 +1,2 @@
+model_checkpoint_path: "snapshot-13"
+all_model_checkpoint_paths: "snapshot-13"
