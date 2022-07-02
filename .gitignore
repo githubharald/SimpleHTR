@@ -6,3 +6,4 @@ notes/
 *.pyc
 .idea/
 dump/
+venv/
