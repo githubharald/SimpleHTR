@@ -1,5 +1,5 @@
 import os
-from flask import Flask, flash, request, redirect, url_for,send_from_directory
+from flask import Flask, flash, request, redirect, url_for,send_from_directory, session
 from werkzeug.utils import secure_filename
 from main import char_list_from_file, infer
 from model import DecoderType, Model
@@ -47,9 +47,12 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            archivo = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(archivo)
+            os.environ["img_file"] = archivo
             unArchivo = os.path.join(path,'uploads',filename)
             #return redirect(url_for('download_file', name=filename))
+            session['filepath'] = archivo
             return redirect(url_for('infer_uploads'))
     return '''
     <!doctype html>
@@ -67,9 +70,10 @@ def infer_uploads():
     print("un archivo")
     print(unArchivo)
     #elModel: Model
-    model = Model(char_list_from_file(), DecoderType, must_restore=True)
+    model = Model(char_list_from_file(), DecoderType.BestPath, must_restore=True)
     #dump=args.dump
-    infer(model, unArchivo)
+    archivo = session.get('filepath',None)
+    infer(model, archivo)
     return '''
             <!doctype html>
             <title>TEST RESPONSE</title>
