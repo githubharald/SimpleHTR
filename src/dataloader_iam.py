@@ -40,11 +40,12 @@ class DataLoaderIAM:
         chars = set()
         bad_samples_reference = ['a01-117-05-02', 'r06-022-03-05']  # known broken images in IAM dataset
         for line in f:
-            # ignore comment line
+            # ignore empty and comment lines
+            line = line.strip()
             if not line or line[0] == '#':
                 continue
 
-            line_split = line.strip().split(' ')
+            line_split = line.split(' ')
             assert len(line_split) >= 9
 
             # filename: part1-part2-part3 --> part1/part1-part2/part1-part2-part3.png
