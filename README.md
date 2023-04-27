@@ -1,6 +1,7 @@
 # Handwritten Text Recognition with TensorFlow
 
-* **Update 2023: see [HTRPipeline](https://github.com/githubharald/HTRPipeline) for a package to read full pages using this model**
+* **Update 2023/2: a [web demo](https://githubharald.github.io/text_reader.html) is available**
+* **Update 2023/1: see [HTRPipeline](https://github.com/githubharald/HTRPipeline) for a package to read full pages**
 * **Update 2021/2: recognize text on line level (multiple words)**
 * **Update 2021/1: more robust model, faster dataloader, word beam search decoder also available for Windows**
 * **Update 2020: code is compatible with TF2**
