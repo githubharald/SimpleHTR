@@ -1,7 +1,7 @@
-editdistance==0.5.2
-lmdb==1.0.0
-matplotlib==3.2.1
+editdistance
+lmdb
+matplotlib
 numpy
 opencv-python
-path==15.0.0
+path
 tensorflow
