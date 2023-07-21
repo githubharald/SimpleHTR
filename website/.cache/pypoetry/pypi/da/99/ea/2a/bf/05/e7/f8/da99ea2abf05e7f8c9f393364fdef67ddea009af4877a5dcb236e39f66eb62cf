@@ -1,0 +1,1 @@
+9999999999{"name": "debugpy", "version": "1.6.2", "summary": "An implementation of the Debug Adapter Protocol for Python", "platform": null, "requires_dist": null, "requires_python": ">=3.7", "files": [], "_cache_version": "1.0.0"}

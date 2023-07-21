@@ -1,0 +1,1 @@
+9999999999{"name": "yarl", "version": "1.8.2", "summary": "Yet another URL library", "platform": null, "requires_dist": ["multidict (>=4.0)", "idna (>=2.0)", "typing-extensions (>=3.7.4) ; python_version < \"3.8\""], "requires_python": ">=3.7", "files": [], "_cache_version": "1.0.0"}

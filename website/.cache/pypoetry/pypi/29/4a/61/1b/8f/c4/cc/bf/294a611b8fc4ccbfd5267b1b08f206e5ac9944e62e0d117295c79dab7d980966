@@ -1,0 +1,1 @@
+9999999999{"name": "charset-normalizer", "version": "2.1.0", "summary": "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet.", "platform": null, "requires_dist": ["unicodedata2 ; extra == 'unicode_backport'"], "requires_python": ">=3.6.0", "files": [], "_cache_version": "1.0.0"}

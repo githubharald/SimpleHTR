@@ -1,0 +1,1 @@
+9999999999{"name": "pycparser", "version": "2.21", "summary": "C parser in Python", "platform": "Cross Platform", "requires_dist": null, "requires_python": ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*", "files": [], "_cache_version": "1.0.0"}

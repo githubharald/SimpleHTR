@@ -1,0 +1,1 @@
+9999999999{"name": "pyparsing", "version": "3.0.9", "summary": "pyparsing module - Classes and methods to define and execute parsing grammars", "platform": null, "requires_dist": ["railroad-diagrams ; extra == \"diagrams\"", "jinja2 ; extra == \"diagrams\""], "requires_python": ">=3.6.8", "files": [], "_cache_version": "1.0.0"}

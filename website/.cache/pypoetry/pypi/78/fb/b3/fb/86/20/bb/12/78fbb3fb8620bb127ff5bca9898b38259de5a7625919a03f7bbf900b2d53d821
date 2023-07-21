@@ -1,0 +1,1 @@
+9999999999{"name": "cffi", "version": "1.15.1", "summary": "Foreign Function Interface for Python calling C code.", "platform": null, "requires_dist": ["pycparser"], "requires_python": "", "files": [], "_cache_version": "1.0.0"}

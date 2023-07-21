@@ -1,0 +1,1 @@
+9999999999{"name": "click", "version": "8.1.3", "summary": "Composable command line interface toolkit", "platform": null, "requires_dist": ["colorama ; platform_system == \"Windows\"", "importlib-metadata ; python_version < \"3.8\""], "requires_python": ">=3.7", "files": [], "_cache_version": "1.0.0"}

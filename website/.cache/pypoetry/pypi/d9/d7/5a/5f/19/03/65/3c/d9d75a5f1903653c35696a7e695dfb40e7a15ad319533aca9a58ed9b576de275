@@ -1,0 +1,1 @@
+9999999999{"name": "argon2-cffi-bindings", "version": "21.2.0", "summary": "Low-level CFFI bindings for Argon2", "platform": "", "requires_dist": ["cffi (>=1.0.1)", "pytest ; extra == 'dev'", "cogapp ; extra == 'dev'", "pre-commit ; extra == 'dev'", "wheel ; extra == 'dev'", "pytest ; extra == 'tests'"], "requires_python": ">=3.6", "files": [], "_cache_version": "1.0.0"}

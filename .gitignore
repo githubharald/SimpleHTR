@@ -1,8 +1,0 @@
-data/words*
-data/words.txt
-src/__pycache__/
-notes/
-*.so
-*.pyc
-.idea/
-dump/

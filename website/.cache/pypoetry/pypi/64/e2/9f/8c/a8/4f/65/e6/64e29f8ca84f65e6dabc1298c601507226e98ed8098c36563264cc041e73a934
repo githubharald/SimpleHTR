@@ -1,0 +1,1 @@
+9999999999{"name": "Werkzeug", "version": "2.1.2", "summary": "The comprehensive WSGI web application library.", "platform": null, "requires_dist": ["watchdog ; extra == 'watchdog'"], "requires_python": ">=3.7", "files": [], "_cache_version": "1.0.0"}

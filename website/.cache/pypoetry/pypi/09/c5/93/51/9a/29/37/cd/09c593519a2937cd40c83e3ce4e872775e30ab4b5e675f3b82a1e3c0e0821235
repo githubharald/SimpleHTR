@@ -1,0 +1,1 @@
+9999999999{"name": "aiosignal", "version": "1.3.1", "summary": "aiosignal: a list of registered asynchronous callbacks", "platform": null, "requires_dist": ["frozenlist (>=1.1.0)"], "requires_python": ">=3.7", "files": [], "_cache_version": "1.0.0"}

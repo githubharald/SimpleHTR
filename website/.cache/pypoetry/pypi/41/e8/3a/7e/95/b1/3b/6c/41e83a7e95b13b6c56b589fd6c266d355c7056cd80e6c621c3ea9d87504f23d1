@@ -1,0 +1,1 @@
+9999999999{"name": "packaging", "version": "21.3", "summary": "Core utilities for Python packages", "platform": "", "requires_dist": ["pyparsing (!=3.0.5,>=2.0.2)"], "requires_python": ">=3.6", "files": [], "_cache_version": "1.0.0"}

@@ -1,0 +1,1 @@
+9999999999{"name": "itsdangerous", "version": "2.1.2", "summary": "Safely pass data to untrusted environments and back.", "platform": null, "requires_dist": null, "requires_python": ">=3.7", "files": [], "_cache_version": "1.0.0"}

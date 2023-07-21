@@ -1,0 +1,1 @@
+9999999999{"name": "pyflakes", "version": "2.4.0", "summary": "passive checker of Python programs", "platform": "", "requires_dist": null, "requires_python": ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*", "files": [], "_cache_version": "1.0.0"}

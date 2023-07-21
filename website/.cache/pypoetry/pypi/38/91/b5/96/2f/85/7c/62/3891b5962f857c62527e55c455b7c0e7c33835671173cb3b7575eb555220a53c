@@ -1,0 +1,1 @@
+9999999999{"name": "async-timeout", "version": "4.0.2", "summary": "Timeout context manager for asyncio programs", "platform": "", "requires_dist": ["typing-extensions (>=3.6.5) ; python_version < \"3.8\""], "requires_python": ">=3.6", "files": [], "_cache_version": "1.0.0"}

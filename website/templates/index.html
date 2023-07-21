@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>AI Text-Transcriber</title>
+        <link rel="icon" type="image/x-icon" href="static/assets/Cheetah.png" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="static/css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
+            <div class="container px-4">
+                <a class="navbar-brand" href="#page-top">Text-Transcriber</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#model">Model</a></li>
+                      <li class="nav-item"><a class="nav-link" href="#process">Process & Resources</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#aboutus">About Us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Header-->
+        <header class="bg-gradient-custom text-white">
+            <div class="container px-4 text-center">
+                <h1 class="fw-bolder">Welcome to Text-Transcriber</h1>
+                <p class="lead">A way to translate your hand-written images to text and speech</p>
+                <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                    <!-- Drag and Drop File section -->
+                    <div id="dropzone" class="drag-drop">
+                        <h1>Drag and Drop File Uploader</h1>
+                    </div>
+                    <div class="centered-container">
+                        <input type="file" id="fileInput" name="file" style="display: none;">
+                        <label for="fileInput" class="drag-drop_button">Or Select File</label>
+                    </div>
+                </form>
+                <div id="outputBox" class="output-box">
+                    Your transcribed text will appear here.
+                </div>
+                <audio id="audioPlayer" controls style="display: none;">
+                    Your browser does not support the audio element.
+                </audio>
+                <!-- Add a button to trigger audio playback -->
+                <button id="playButton" style="display: none;">Play Audio</button>
+            </div>
+        </header>
+        <!-- About section-->
+        <section id="home">
+            <div class="container px-4">
+                <div class="row gx-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <h2>Home</h2>
+                        <p class="lead">The Text Transcriber is intended to help the visually impaired, students, and those who need an efficient way to transcribe handwritten words by offering a machine learning model that can translate handwritten images to text and speech.</p>
+                        <ul>
+                            <li>A drop down menu to select what file you want to run through the model</li>
+                            <li>Using a Word Seperator to first find all the words in the sentence(s)</li>
+                            <li>Using a Text-Transcriber AI to print out the text and combine them</li>
+                            <li>Using Google's Text-to-Speech API to read out the transcribed text</li>
+                            
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+          <!-- Script -->
+          <script src="script.js"></script>
+        </body>
+        <!-- Services section-->
+        <section class="bg-light" id="model">
+            <div class="container px-4">
+                <div class="row gx-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <h2>Model</h2>
+                        <p class="lead">Our model consists of a NN with 5 CNN layers and 2 RNN layers. 
+                            The CNN layers are responsible for extracting relevant features from the image, while the RNN layers propagates the relevant information and maps it to a matrix.
+                        The matrix is then sent to a Connectionist Temporal Classification (CTC) layer. This decodes the matrix and outputs the final text. </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+  
+      <!-- Process Section -->
+       <section id="process">
+            <div class="container px-4">
+                <div class="row gx-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <h2>Process & Resources </h2>
+                        <p class="lead"> Trained using <a href="https://fki.tic.heia-fr.ch/databases/iam-handwriting-database"> IAM Handwriting Database</a> </p>
+                        <p class="lead">Githubs Used</p>
+                          <ul class="lead">
+                            <li> <a href="https://github.com/githubharald/SimpleHTR"> githubharald/SimpleHTR </a></li>
+                            <li> <a href="https://github.com/filyp/autocorrect"> filyp/autocorrect </a></li>
+                            <li> <a href="https://github.com/githubharald/WordDetector"> githubharald/WordDetector </a></li>
+                          </ul>
+                          
+                    </div>
+                </div>
+            </div>
+        </section>
+  
+
+
+  
+        <!-- Contact section-->
+        <section class="bg-light" id="aboutus">
+            <div class="container px-4">
+                <div class="row gx-4 justify-content-center">
+                    <div class="col-lg-8">
+                        <h2>About Us</h2>
+                        <p class="lead">Created by a group of 6 high-school students (plus an amazing teacher) over the course of 3 weeks.</p>
+                        <!-- Indiviudal images -->
+                        <div class="image-container">
+                            <div class="image-group">
+                                <figure>
+                                    <img src="static/assets/Shakib.jpg" class="circle-image center" alt="Student">
+                                    <figcaption>Shakib</figcaption>
+                                </figure>
+                                <figure>
+                                    <img src="static/assets/Thomas.jpg" class="circle-image" alt="Student">
+                                    <figcaption>Thomas</figcaption>
+                                </figure>
+                                <figure>
+                                    <img src="static/assets/Lilly.jpg" class="circle-image" alt="Student">
+                                    <figcaption>Lilly</figcaption>
+                                </figure>
+                            </div>
+                            <div class="image-group">
+                                <figure>
+                                    <img src="static/assets/Nicholas.jpg" class="circle-image" alt="Student">
+                                    <figcaption>Nicholas</figcaption>
+                                </figure>
+                                <figure>
+                                    <img src="static/assets/Vanessa.jpg" class="circle-image" alt="Student">
+                                    <figcaption>Vanessa</figcaption>
+                                </figure>
+                                <figure>
+                                    <img src="static/assets/test.jpg" class="circle-image" alt="Student">
+                                    <figcaption>Gio</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                       <div class="image-container">
+                          <div class="centered-image">
+                           <figure>
+                             <img src="static/assets/Yang.jpeg" class="circle-image" alt="Instructor">
+                          <figcaption>Yang</figcaption>
+                        </figure>
+                      </div>
+                    </div>
+<!-- end of the images code -->
+                          
+                </div>
+            </div>
+                  
+        </section>
+        <!-- Footer-->
+        <footer class="py-5 bg-dark">
+            <div class="container px-4"><p class="m-0 text-center text-white">Copyright &copy; Cheerful Cheetahs 2023</p></div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="static/js/scripts.js"></script>
+    </body>
+</html>

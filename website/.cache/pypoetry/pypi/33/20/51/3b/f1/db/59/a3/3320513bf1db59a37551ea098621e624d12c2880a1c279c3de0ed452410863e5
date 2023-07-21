@@ -1,0 +1,1 @@
+9999999999{"name": "Jinja2", "version": "3.1.2", "summary": "A very fast and expressive template engine.", "platform": null, "requires_dist": ["MarkupSafe (>=2.0)", "Babel (>=2.7) ; extra == 'i18n'"], "requires_python": ">=3.7", "files": [], "_cache_version": "1.0.0"}

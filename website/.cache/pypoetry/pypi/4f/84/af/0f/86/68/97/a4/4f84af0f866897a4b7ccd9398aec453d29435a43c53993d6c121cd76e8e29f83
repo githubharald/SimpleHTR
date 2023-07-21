@@ -1,0 +1,1 @@
+9999999999{"name": "parso", "version": "0.8.3", "summary": "A Python Parser", "platform": "any", "requires_dist": ["flake8 (==3.8.3) ; extra == 'qa'", "mypy (==0.782) ; extra == 'qa'", "docopt ; extra == 'testing'", "pytest (<6.0.0) ; extra == 'testing'"], "requires_python": ">=3.6", "files": [], "_cache_version": "1.0.0"}
