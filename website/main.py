@@ -40,7 +40,7 @@ def upload():
     
 @app.route('/output.mp3')
 def returnAudioFile():
-    audio_file_path = 'C:/Users/Shakib/Desktop/ai camp/projects/Detect-Transcribe/website/output.mp3'
+    audio_file_path = './output.mp3'
     return send_file(
          audio_file_path, 
          mimetype="audio/mpeg", 
