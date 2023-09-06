@@ -238,7 +238,7 @@ class Model:
         for b in range(max_b):
             csv = ''
             for t in range(max_t):
-                csv += ';'.join([str(rnn_output[t, b, c]) for c in range(max_c)]) + '\n'
+                csv += ';'.join([str(rnn_output[t, b, c]) for c in range(max_c)]) + ';\n'
             fn = dump_dir + 'rnnOutput_' + str(b) + '.csv'
             print('Write dump of NN to file: ' + fn)
             with open(fn, 'w') as f:
