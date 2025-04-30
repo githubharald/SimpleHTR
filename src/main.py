@@ -1,6 +1,7 @@
 import argparse
 import json
 from typing import Tuple, List
+import editdistance
 
 import cv2
 import editdistance
