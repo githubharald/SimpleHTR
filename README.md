@@ -71,6 +71,13 @@ Follow these instructions to integrate word beam search decoding:
 2. Compile and install by running `pip install .` at the root level of the CTCWordBeamSearch repository
 3. Specify the command line option `--decoder wordbeamsearch` when executing `main.py` to actually use the decoder
 
+**If you are having issue with**
+`pip install -r requirement.txt`
+**then this might be a problem while wheel preparation step for the lmbd==1.0.0 package.** <br>
+**Try installing the patch-ng mannually by** <br>
+`pip install patch-ng` <br>
+`pip install -r requirement.txt`
+
 The dictionary is automatically created in training and validation mode by using all words contained in the IAM dataset (i.e. also including words from validation set) and is saved into the file `data/corpus.txt`.
 Further, the manually created list of word-characters can be found in the file `model/wordCharList.txt`.
 Beam width is set to 50 to conform with the beam width of vanilla beam search decoding.
