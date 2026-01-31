@@ -59,7 +59,7 @@ Probability: 0.6674373149871826
 
 ## Integrate word beam search decoding
 
-The [word beam search decoder](https://repositum.tuwien.ac.at/obvutwoa/download/pdf/2774578) can be used instead of the two decoders shipped with TF.
+The [word beam search decoder](https://githubharald.github.io/publications.html) can be used instead of the two decoders shipped with TF.
 Words are constrained to those contained in a dictionary, but arbitrary non-word character strings (numbers, punctuation marks) can still be recognized.
 The following illustration shows a sample for which word beam search is able to recognize the correct text, while the other decoders fail.
 
@@ -122,14 +122,14 @@ Training on text lines takes a bit longer.
 
 ## Information about model
 
-The model is a stripped-down version of the HTR system I implemented for [my thesis]((https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742)).
+The model is a stripped-down version of the HTR system I implemented for [my thesis](https://githubharald.github.io/publications.html).
 What remains is the bare minimum to recognize text with an acceptable accuracy.
 It consists of 5 CNN layers, 2 RNN (LSTM) layers and the CTC loss and decoding layer.
-For more details see this [Medium article](https://towardsdatascience.com/2326a3487cd5).
+For more details see this [Medium article](https://harald-scheidl.medium.com/2326a3487cd5).
 
 
 ## References
-* [Build a Handwritten Text Recognition System using TensorFlow](https://towardsdatascience.com/2326a3487cd5)
-* [Scheidl - Handwritten Text Recognition in Historical Documents](https://repositum.tuwien.ac.at/obvutwhs/download/pdf/2874742)
-* [Scheidl - Word Beam Search: A Connectionist Temporal Classification Decoding Algorithm](https://repositum.tuwien.ac.at/obvutwoa/download/pdf/2774578)
+* [Build a Handwritten Text Recognition System using TensorFlow](https://harald-scheidl.medium.com/2326a3487cd5)
+* [Scheidl - Handwritten Text Recognition in Historical Documents](https://githubharald.github.io/publications.html)
+* [Scheidl - Word Beam Search: A Connectionist Temporal Classification Decoding Algorithm](https://githubharald.github.io/publications.html)
 
